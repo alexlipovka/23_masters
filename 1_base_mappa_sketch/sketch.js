@@ -10,6 +10,7 @@ const options = {
 	lng: 93,
 	zoom: 12,
 	// style: 'https://{s}.tile.osm.org/{z}/{x}/{y}.png'
+
 	// style: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
 	style: 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
 	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
@@ -20,6 +21,10 @@ const options = {
 	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png'
 	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png'
 	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png'
+
+	// style: 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
+	// style: 'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png'
+	// style: 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png'
 };
 
 // Настройка приложения
