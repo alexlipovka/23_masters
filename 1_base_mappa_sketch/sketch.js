@@ -9,7 +9,17 @@ const options = {
 	lat: 56,
 	lng: 93,
 	zoom: 12,
-	style: 'https://{s}.tile.osm.org/{z}/{x}/{y}.png'
+	// style: 'https://{s}.tile.osm.org/{z}/{x}/{y}.png'
+	// style: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+	style: 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
+	// style: 'http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png'
+	// style: 'http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png'
+	// style: 'http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png'
+	// style: 'http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png'
+	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png'
+	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png'
+	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png'
 };
 
 // Настройка приложения
