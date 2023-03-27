@@ -27,9 +27,27 @@ const options = {
 	// style: 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png'
 };
 
+class tileObj {
+	constructor(index, width, height, color, posx, posy) {
+		this.index = index;
+		this.width = width;
+		this.height = height;
+		this.color = color;
+		this.posx = posx;
+		this.posy = posy;
+	}
+
+}
+
 let objs = [];
 
 let canvasPos = [0, 0];
+let zoomPos = [0, 0];
+let gridTransform = [];
+let tileNum = 0;
+let tileColors = [];
+
+let tiles = [];
 
 // Настройка приложения
 // Данная функция будет выполнена первой и только один раз
@@ -39,7 +57,7 @@ function setup() {
 	myMap = mappa.tileMap(options);
 
 	myMap.overlay(canvas);
-
+	myMap.onChange(onChangedMap);
 }
 
 // Основная функция отрисовки
@@ -47,7 +65,7 @@ function setup() {
 function draw() {
 	// background(100);
 	clear();
-
+	drawGrid();
 	// objs.forEach(element => {
 	// 	let pt = myMap.latLngToPixel(element);
 	// 	ellipse(pt.x, pt.y, 15, 15);
@@ -59,17 +77,7 @@ function draw() {
 		ellipse(pt.x, pt.y, 3 + 5 * i, 3 + 5 * i);
 	}
 
-	push();
-	translate(-Number(canvasPos[0]), -Number(canvasPos[1]));
-	for (let i = 0; i < selectAll('.leaflet-tile-loaded').length; i++) {
-		tw = selectAll('.leaflet-tile-loaded')[i].elt.width;
-		th = selectAll('.leaflet-tile-loaded')[i].elt.height;
-		px = selectAll('.leaflet-tile-loaded')[i].elt._leaflet_pos.x;
-		py = selectAll('.leaflet-tile-loaded')[i].elt._leaflet_pos.y;
-		fill(100, 100);
-		rect(px, py, tw, th);
-	}
-	pop();
+
 	ellipse(mouseX, mouseY, 51, 51);
 }
 
@@ -87,11 +95,83 @@ function mouseClicked() {
 }
 
 function mouseDragged() {
-	let t = select('#defaultCanvas0').elt.style.transform;
+}
+
+function onChangedMap() {
+	tiles = [];
+	console.log('onChangedMap')
 	const regex = /translate\(([-\d]+)px,\s+([-.\d]+)px\)/;
-	const matches = t.match(regex);
-	if (matches) {
-		canvasPos[0] = matches[1];
-		canvasPos[1] = matches[2];
+	const regex3d = /translate3d\(([-\d]+)px,\s+([-.\d]+)px,\s+([-.\d]+)px\)/;
+
+	let zooms = selectAll('.leaflet-zoom-animated').length;
+	let curZoom = 0;
+	for (let i = 0; i < zooms; i++) {
+		curZoom = selectAll('.leaflet-zoom-animated')[i].elt.childElementCount > 0 ? i : curZoom;
+		console.log(curZoom);
 	}
+	let zt = selectAll('.leaflet-zoom-animated')[curZoom].elt.style.transform;
+	let zoomTrans = zt.match(regex3d);
+	zoomPos[0] = zoomTrans[1];
+	zoomPos[1] = zoomTrans[2];
+	// tileNum = selectAll('.leaflet-tile-loaded').length;
+	tileNum = selectAll('.leaflet-zoom-animated')[curZoom].length;
+	let t = select('#defaultCanvas0').elt.style.transform;
+	const matches = t.match(regex);
+	let mp = select('.leaflet-map-pane').elt.style.transform;
+	const matches3d = mp.match(regex3d);
+	let imgs = document.getElementsByTagName("img");
+	gridTransform = [];
+	tileColors = [];
+	for (let i = 0; i < imgs.length; i++) {
+		let gt = imgs[i].style.transform.match(regex3d);
+		gridTransform.push([gt[1], gt[2]]);
+		tileColors.push([0, 0, 0, 0]);
+		
+		var img = new Image();
+		img.src = imgs[i].src;
+		loadImage(img.src, image => {
+			var pixels = image.loadPixels();
+			for(let j = 0; j < tiles.length; j++) {
+				if(tiles[j].index == i) {
+					tiles[j].color = image.get(127, 127);
+				}
+			}
+		});	
+		tiles.push(new tileObj(i, 256, 256, [100, 100, 100, 0], gt[1], gt[2]));
+		// ctx = imgs[i].getContext('2d');
+	}
+
+
+	if (matches3d) {
+		canvasPos[0] = matches3d[1];
+		canvasPos[1] = matches3d[2];
+	}
+	// drawGrid();
+	// console.log(matches);
+	// console.log(matches3d);
+	redraw();
+}
+
+function drawGrid() {
+	// console.log('drawGrid');
+	push();
+	translate(Number(canvasPos[0]), Number(canvasPos[1]));
+	push();
+	translate(Number(zoomPos[0]), Number(zoomPos[1]));
+	textSize(12);
+
+	// for (let i = 0; i < gridTransform.length; i++) {
+	for (let i = 0; i < tiles.length; i++) {
+		push();
+		translate(Number(tiles[i].posx), Number(tiles[i].posy));
+		fill(0, 0, 150);
+		let textC = i + ' x' + tiles[i].posx + ' y' + tiles[i].posy + '\n' + 'x' + canvasPos[0] + ' y' + canvasPos[1];
+		text(textC, 20, 20);
+			fill(tiles[i].color[0], tiles[i].color[1], tiles[i].color[2], 200);
+		rect(0, 0, 256, 256);
+		pop();
+	}
+
+	pop();
+	pop();
 }
