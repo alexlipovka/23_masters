@@ -27,7 +27,7 @@ const options = {
 
 // Заготовка класса для хранения и описания данных о тайлах
 class tileObj {
-	
+
 	constructor(index, width, height, color, posX, posY, img) {
 		this.index = index;
 		this.width = width;
@@ -38,6 +38,17 @@ class tileObj {
 		this.img = img;
 	}
 }
+
+let drawOffset = {
+	canvas: {
+		x: 0,
+		y: 0,
+	},
+	zoomed: {
+		x: 0,
+		y: 0,
+	}
+};
 
 let canvasPos = [0, 0];
 let zoomPos = [0, 0];
@@ -100,6 +111,11 @@ function mouseDragged() {
 }
 
 function onChangedMap() {
+	analyzeTiles();
+	redraw();
+}
+
+function analyzeTiles() {
 	tiles = [];
 	const regex = /translate\(([-\d]+)px,\s+([-.\d]+)px\)/;
 	const regex3d = /translate3d\(([-\d]+)px,\s+([-.\d]+)px,\s+([-.\d]+)px\)/;
@@ -112,8 +128,10 @@ function onChangedMap() {
 	}
 	let zt = selectAll('.leaflet-zoom-animated')[curZoom].elt.style.transform;
 	let zoomTrans = zt.match(regex3d);
-	zoomPos[0] = zoomTrans[1];
-	zoomPos[1] = zoomTrans[2];
+	// zoomPos[0] = zoomTrans[1];
+	// zoomPos[1] = zoomTrans[2];
+	drawOffset.zoomed.x = zoomTrans[1];
+	drawOffset.zoomed.y = zoomTrans[2];
 	tileNum = selectAll('.leaflet-zoom-animated')[curZoom].length;
 	let t = select('#defaultCanvas0').elt.style.transform;
 	const matches = t.match(regex);
@@ -126,7 +144,7 @@ function onChangedMap() {
 		let gt = imgs[i].style.transform.match(regex3d);
 		gridTransform.push([gt[1], gt[2]]);
 		tileColors.push([0, 0, 0, 0]);
-		
+
 		let img = new Image();
 		img.src = imgs[i].src;
 		loadImage(img.src, image => {
@@ -136,46 +154,50 @@ function onChangedMap() {
 				avg += pix;
 			});
 			avg /= image.pixels.length;
-			for(let j = 0; j < tiles.length; j++) {
-				if(tiles[j].index == i) {
-					c = [	image.pixels[(127*256+127) * 4 + 0], 
-								image.pixels[(127*256+127) * 4 + 1], 
-								image.pixels[(127*256+127) * 4 + 2], 
-								image.pixels[(127*256+127) * 4 + 3]];
+			for (let j = 0; j < tiles.length; j++) {
+				if (tiles[j].index == i) {
+					c = [image.pixels[(127 * 256 + 127) * 4 + 0],
+					image.pixels[(127 * 256 + 127) * 4 + 1],
+					image.pixels[(127 * 256 + 127) * 4 + 2],
+					image.pixels[(127 * 256 + 127) * 4 + 3]];
 					tiles[j].color = [avg, avg, avg, avg]; //image.get(127, 127); только быстрее
 					tiles[j].img = image;
 					redraw();
 					break;
 				}
 			}
-		});	
+		});
 		tiles.push(new tileObj(i, 256, 256, [100, 100, 100, 0], gt[1], gt[2]));
 	}
 
 
 	if (matches3d) {
-		canvasPos[0] = matches3d[1];
-		canvasPos[1] = matches3d[2];
+		// canvasPos[0] = matches3d[1];
+		// canvasPos[1] = matches3d[2];
+		drawOffset.canvas.x = Number(matches3d[1]);
+		drawOffset.canvas.y = Number(matches3d[2]);
 	}
-	redraw();
 }
 
 function drawGrid() {
 	stroke(150);
 	strokeWeight(0.1);
 	push();
-	translate(Number(canvasPos[0]), Number(canvasPos[1]));
+	translate(drawOffset.canvas.x, drawOffset.canvas.y);
 	push();
-	translate(Number(zoomPos[0]), Number(zoomPos[1]));
+	// translate(Number(zoomPos[0]), Number(zoomPos[1]));
+	translate(drawOffset.zoomed.x, drawOffset.zoomed.y);
 	textSize(12);
 
 	for (let i = 0; i < tiles.length; i++) {
 		push();
 		translate(Number(tiles[i].posX), Number(tiles[i].posY));
 		fill(0, 0, 150);
-		let textC = 'tile ' + i + '\npos ' + 'x' + tiles[i].posX + ' y' + tiles[i].posY + '\ncanvas ' + 'x' + canvasPos[0] + ' y' + canvasPos[1] + '\nzoom ' + 'x' + zoomPos[0] + ' y' + zoomPos[1];
+		let textC = 'tile ' + i + '\npos ' + 'x' + tiles[i].posX + ' y' + tiles[i].posY + 
+								'\ncanvas ' + 'x' + drawOffset.canvas.x + ' y' + drawOffset.canvas.y + 
+								'\nzoom ' + 'x' + drawOffset.zoomed.x + ' y' + drawOffset.zoomed.y;
 		text(textC, 20, 20);
-			fill(tiles[i].color[0], tiles[i].color[1], tiles[i].color[2], 150);
+		fill(tiles[i].color[0], tiles[i].color[1], tiles[i].color[2], 150);
 		rect(0, 0, 256, 256);
 		pop();
 	}
