@@ -202,28 +202,33 @@ function analyzeTiles() {
 }
 
 function drawGrid() {
-	stroke(150);
-	strokeWeight(10);
+	noStroke();
+	// stroke(150);
 	push();
 	translate(drawOffset.canvas.x, drawOffset.canvas.y);
 	push();
 	// translate(Number(zoomPos[0]), Number(zoomPos[1]));
 	translate(drawOffset.zoomed.x, drawOffset.zoomed.y);
 	textSize(12);
-
+	
 	for (let i = 0; i < tiles.length; i++) {
 		push();
 		translate(Number(tiles[i].posX), Number(tiles[i].posY));
 		fill(0, 0, 150);
 		noStroke();
 		let textC = 'tile ' + i + '\npos ' + 'x' + tiles[i].posX + ' y' + tiles[i].posY + 
-								'\ncanvas ' + 'x' + drawOffset.canvas.x + ' y' + drawOffset.canvas.y + 
-								'\nzoom ' + 'x' + drawOffset.zoomed.x + ' y' + drawOffset.zoomed.y;
+		'\ncanvas ' + 'x' + drawOffset.canvas.x + ' y' + drawOffset.canvas.y + 
+		'\nzoom ' + 'x' + drawOffset.zoomed.x + ' y' + drawOffset.zoomed.y;
 		text(textC, 20, 20);
+		strokeWeight(12);
 		stroke(tiles[i].color[0], tiles[i].color[1], tiles[i].color[2]);
 		// fill(tiles[i].color[0], tiles[i].color[1], tiles[i].color[2], 255);
 		noFill();
 		let off = 5;
+		rect(0 + off, 0 + off, 256 - 2*off, 256 - 2*off);
+		strokeWeight(4);
+		off = 2;
+		stroke(255 - tiles[i].color[0], 255 - tiles[i].color[1], 255 - tiles[i].color[2]);
 		rect(0 + off, 0 + off, 256 - 2*off, 256 - 2*off);
 		pop();
 	}
