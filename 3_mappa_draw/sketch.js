@@ -99,7 +99,7 @@ function mouseDragged() {
 
 function onChangedMap() {
 	tiles = [];
-	console.log('onChangedMap')
+	// console.log('onChangedMap')
 	const regex = /translate\(([-\d]+)px,\s+([-.\d]+)px\)/;
 	const regex3d = /translate3d\(([-\d]+)px,\s+([-.\d]+)px,\s+([-.\d]+)px\)/;
 
@@ -107,7 +107,7 @@ function onChangedMap() {
 	let curZoom = 0;
 	for (let i = 0; i < zooms; i++) {
 		curZoom = selectAll('.leaflet-zoom-animated')[i].elt.childElementCount > 0 ? i : curZoom;
-		console.log(curZoom);
+		// console.log(curZoom);
 	}
 	let zt = selectAll('.leaflet-zoom-animated')[curZoom].elt.style.transform;
 	let zoomTrans = zt.match(regex3d);
