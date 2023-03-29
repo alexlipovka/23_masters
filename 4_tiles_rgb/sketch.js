@@ -159,6 +159,7 @@ function analyzeTiles() {
 		img.src = imgs[i].src;
 		loadImage(img.src, image => {
 			image.loadPixels();
+			//расчитать среднее значение цвета изображения image.pixels
 			let avgR = 0;
 			let avgG = 0;
 			let avgB = 0;
@@ -178,10 +179,6 @@ function analyzeTiles() {
 			avgA /= image.pixels.length / 4;
 			for (let j = 0; j < tiles.length; j++) {
 				if (tiles[j].index == i) {
-					// c = [image.pixels[(127 * 256 + 127) * 4 + 0],
-					// image.pixels[(127 * 256 + 127) * 4 + 1],
-					// image.pixels[(127 * 256 + 127) * 4 + 2],
-					// image.pixels[(127 * 256 + 127) * 4 + 3]];
 					tiles[j].color = [avgR, avgG, avgB, avgA]; //image.get(127, 127); только быстрее
 					tiles[j].img = image;
 					redraw();
