@@ -7,11 +7,11 @@ const options = {
 	lat: 56,
 	lng: 93,
 	zoom: 12,
-	style: 'https://{s}.tile.osm.org/{z}/{x}/{y}.png'
+	// style: 'https://{s}.tile.osm.org/{z}/{x}/{y}.png'
 
 	// style: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
 	// style: 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
+	style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
 	// style: 'http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png'
 	// style: 'http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png'
 	// style: 'http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png'
@@ -134,19 +134,22 @@ function analyzeTiles() {
 	let curZoom = 0;
 	for (let i = 0; i < zooms; i++) {
 		curZoom = selectAll('.leaflet-zoom-animated')[i].elt.childElementCount > 0 ? i : curZoom;
-		// console.log(curZoom);
 	}
 	let zt = selectAll('.leaflet-zoom-animated')[curZoom].elt.style.transform;
 	let zoomTrans = zt.match(regex3d);
-	// zoomPos[0] = zoomTrans[1];
-	// zoomPos[1] = zoomTrans[2];
 	drawOffset.zoomed.x = zoomTrans[1];
 	drawOffset.zoomed.y = zoomTrans[2];
+
 	tileNum = selectAll('.leaflet-zoom-animated')[curZoom].length;
 	let t = select('#defaultCanvas0').elt.style.transform;
-	const matches = t.match(regex);
+	// const matches = t.match(regex);
 	let mp = select('.leaflet-map-pane').elt.style.transform;
 	const matches3d = mp.match(regex3d);
+	if (matches3d) {
+		drawOffset.canvas.x = Number(matches3d[1]);
+		drawOffset.canvas.y = Number(matches3d[2]);
+	}
+	
 	let imgs = document.getElementsByTagName("img");
 	gridTransform = [];
 	tileColors = [];
@@ -190,37 +193,32 @@ function analyzeTiles() {
 	}
 
 
-	if (matches3d) {
-		// canvasPos[0] = matches3d[1];
-		// canvasPos[1] = matches3d[2];
-		drawOffset.canvas.x = Number(matches3d[1]);
-		drawOffset.canvas.y = Number(matches3d[2]);
-	}
 }
 
 function drawGrid() {
 	noStroke();
-	// stroke(150);
 	push();
 	translate(drawOffset.canvas.x, drawOffset.canvas.y);
+
 	push();
-	// translate(Number(zoomPos[0]), Number(zoomPos[1]));
 	translate(drawOffset.zoomed.x, drawOffset.zoomed.y);
-	textSize(12);
 	
 	for (let i = 0; i < tiles.length; i++) {
 		push();
 		translate(Number(tiles[i].posX), Number(tiles[i].posY));
+		
 		fill(0, 0, 150);
 		noStroke();
 		let textC = 'tile ' + i + '\npos ' + 'x' + tiles[i].posX + ' y' + tiles[i].posY + 
 		'\ncanvas ' + 'x' + drawOffset.canvas.x + ' y' + drawOffset.canvas.y + 
 		'\nzoom ' + 'x' + drawOffset.zoomed.x + ' y' + drawOffset.zoomed.y;
+		textSize(12);
 		text(textC, 20, 20);
-		strokeWeight(12);
-		stroke(tiles[i].color[0], tiles[i].color[1], tiles[i].color[2]);
-		// fill(tiles[i].color[0], tiles[i].color[1], tiles[i].color[2], 255);
-		noFill();
+		// strokeWeight(12);
+		// stroke(tiles[i].color[0], tiles[i].color[1], tiles[i].color[2]);
+		noStroke();
+		fill(tiles[i].color[0], tiles[i].color[1], tiles[i].color[2], 200);
+		// noFill();
 		let off = 5;
 		rect(0 + off, 0 + off, 256 - 2*off, 256 - 2*off);
 		strokeWeight(4);
