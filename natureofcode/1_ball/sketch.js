@@ -3,8 +3,18 @@
 
 let balls = [];
 
+var gui;
+var radius = 10;
+var forces_x = 0.1;
+var forces_y = 0.1;
+
 function setup () {
 	createCanvas(windowWidth, windowHeight);
+	gui = createGui("Настройка шариков");
+	sliderRange(5, 50, 1);
+	gui.addGlobals('radius');
+	sliderRange(-2, 2, 0.1);
+	gui.addGlobals('forces_x', 'forces_y');
 }
 
 // Основная функция отрисовки
@@ -22,10 +32,6 @@ function draw () {
 	}
 	// ellipse(mouseX, mouseY, 21, 21);
 	// blendMode(OVERLAY);
-	textSize(18);
-	fill(0);
-	noStroke();
-	text("Кликни мышкой", 20, 20);
 	// blendMode(BLEND);
 }
 
@@ -35,5 +41,7 @@ function windowResized() {
 }
 
 function mouseClicked() {
-	balls.push(new Ball(new p5.Vector(mouseX, mouseY), new p5.Vector(Math.random() * 10 - 5, 0), new p5.Vector(0, 0.1)));
+	if(keyIsPressed && keyCode === CONTROL) {
+		balls.push(new Ball(radius, new p5.Vector(mouseX, mouseY), new p5.Vector(0, 0), new p5.Vector(forces_x, forces_y)));
+	}
 }

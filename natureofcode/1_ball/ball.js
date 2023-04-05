@@ -1,9 +1,9 @@
 class Ball {
-	constructor (pos, vel, acc) {
+	constructor (r, pos, vel, acc) {
 		this.pos = pos;
 		this.vel = vel;
 		this.acc = acc;
-		this.r = 10;
+		this.r = r;
 		this.friction = 0.999;
 		this.bounce_friction = 0.9;
 	}
@@ -11,7 +11,7 @@ class Ball {
 	draw () {
 		// noStroke();
 		fill(200, 10);
-		stroke(150, 100);
+		stroke(100, 100);
 		ellipse(this.pos.x, this.pos.y, this.r*2, this.r*2);
 		let f = this.acc.copy();
 		f.normalize();
@@ -31,6 +31,9 @@ class Ball {
 	}
 
 	update() {
+		this.acc.x = forces_x;
+		this.acc.y = forces_y;
+
 		this.vel.add(this.acc);
 		this.vel.mult(this.friction);
 		this.pos.add(this.vel);
