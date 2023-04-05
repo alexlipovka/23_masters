@@ -1,5 +1,5 @@
 class Ball {
-	constructor (r, pos, vel, acc) {
+	constructor(r, pos, vel, acc) {
 		this.pos = pos;
 		this.vel = vel;
 		this.acc = acc;
@@ -8,11 +8,11 @@ class Ball {
 		this.bounce_friction = 0.9;
 	}
 
-	draw () {
+	draw() {
 		// noStroke();
 		fill(200, 10);
 		stroke(100, 100);
-		ellipse(this.pos.x, this.pos.y, this.r*2, this.r*2);
+		ellipse(this.pos.x, this.pos.y, this.r * 2, this.r * 2);
 		let f = this.acc.copy();
 		f.normalize();
 		f.mult(this.acc.mag());
@@ -31,29 +31,31 @@ class Ball {
 	}
 
 	update() {
-		this.acc.x = forces_x;
-		this.acc.y = forces_y;
+		if (useGlobal) {
+			this.acc.x = forces_x;
+			this.acc.y = forces_y;
+		}
 
 		this.vel.add(this.acc);
 		this.vel.mult(this.friction);
 		this.pos.add(this.vel);
 
-		if(this.pos.x + this.r > width) {
+		if (this.pos.x + this.r > width) {
 			this.pos.x = width - this.r;
 			this.vel.mult([-1, 1]);
 			this.vel.mult(this.bounce_friction);
 		}
-		if(this.pos.x + this.r < 0) {
+		if (this.pos.x + this.r < 0) {
 			this.pos.x = this.r;
 			this.vel.mult([-1, 1]);
 			this.vel.mult(this.bounce_friction);
 		}
-		if(this.pos.y + this.r > height) {
+		if (this.pos.y + this.r > height) {
 			this.pos.y = height - this.r;
 			this.vel.mult([1, -1]);
 			this.vel.mult(this.bounce_friction);
 		}
-		if(this.pos.y + this.r < 0) {
+		if (this.pos.y + this.r < 0) {
 			this.pos.y = this.r;
 			this.vel.mult([1, -1]);
 			this.vel.mult(this.bounce_friction);
