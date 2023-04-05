@@ -13,12 +13,8 @@ function draw () {
 	blendMode(ADD);
 	background(255, 1);
 	blendMode(BLEND);
-	// fill(255, 1);
-	// noStroke();
-	// rect(0, 0, width, height);
 	ball.update();
 	ball.draw();
-	// ellipse(mouseX, mouseY, 21, 21);
 }
 
 // Вспомогательная функция, которая реагирует на изменения размера
