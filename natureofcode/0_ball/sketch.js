@@ -1,7 +1,7 @@
 // Настройка приложения
 // Данная функция будет выполнена первой и только один раз
 
-let ball = new Ball(new p5.Vector(20, 20), new p5.Vector(0, 0), new p5.Vector(0.4, 0.4));
+let ball = new Ball(new p5.Vector(100, 100), new p5.Vector(0, 0), new p5.Vector(0.1, 0.1), 20);
 
 function setup () {
 	createCanvas(windowWidth, windowHeight);
@@ -13,7 +13,9 @@ function draw () {
 	blendMode(ADD);
 	background(255, 1);
 	blendMode(BLEND);
+
 	ball.update();
+
 	ball.draw();
 }
 
