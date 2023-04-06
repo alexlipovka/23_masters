@@ -84,8 +84,8 @@ class Ball {
 
 update() {
 	if (settingsObject.useGlobal) {
-		this.acc.x = forces_x;
-		this.acc.y = forces_y;
+		this.acc.x = settingsObject.forces_x;
+		this.acc.y = settingsObject.forces_y;
 	} else {
 		this.accel();
 	}

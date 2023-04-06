@@ -32,11 +32,11 @@ function setup() {
 	ballsController.add(settingsObject, "forces_y", -2, 2);
 	// sliderRange(0, 255, 1);
 	// gui.addGlobals('useGlobal', 'backAlpha', 'cleanBackground', 'playSim');
-	ballsController.add(settingsObject, "useGlobal");
+	ballsController.add(settingsObject, "useGlobal").listen();
 	ballsController.add(settingsObject, "backAlpha", 0, 255);
 	ballsController.add(settingsObject, "cleanBackground");
 	ballsController.add(settingsObject, "playSim").listen();
-	ballsController.add(settingsObject, "effectField", 0, 600);
+	ballsController.add(settingsObject, "effectField", 0, 600).listen();
 	ballsController.add(settingsObject, "collide").listen();
 }
 
@@ -84,5 +84,11 @@ function keyPressed() {
 		settingsObject.playSim = !settingsObject.playSim;
 	} else if(key == 'c') {
 		settingsObject.collide = !settingsObject.collide;
+	} else if(key == 'g') {
+		settingsObject.useGlobal = !settingsObject.useGlobal;
 	}
+}
+
+function mouseWheel(event) {
+	settingsObject.effectField += event.delta;
 }
