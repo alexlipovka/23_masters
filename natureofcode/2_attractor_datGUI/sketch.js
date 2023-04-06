@@ -13,6 +13,8 @@ let settingsObject = {
 	cleanBackground : true,
 	backAlpha : 50,
 	playSim : false,
+	effectField: 300,
+	collide: true,
 };
 
 function setup() {
@@ -34,6 +36,8 @@ function setup() {
 	ballsController.add(settingsObject, "backAlpha", 0, 255);
 	ballsController.add(settingsObject, "cleanBackground");
 	ballsController.add(settingsObject, "playSim").listen();
+	ballsController.add(settingsObject, "effectField", 0, 600);
+	ballsController.add(settingsObject, "collide").listen();
 }
 
 // Основная функция отрисовки
@@ -46,7 +50,7 @@ function draw() {
 	}
 	noStroke();
 	fill(240);
-	ellipse(attractor.x, attractor.y, 600, 600);
+	ellipse(attractor.x, attractor.y, settingsObject.effectField*2, settingsObject.effectField*2);
 	fill(50);
 	ellipse(attractor.x, attractor.y, 20, 20);
 
@@ -78,7 +82,7 @@ function keyPressed() {
 	console.log(key);
 	if (key == 'p') {
 		settingsObject.playSim = !settingsObject.playSim;
-		// gui.update();
-		// setValue('playSim');
+	} else if(key == 'c') {
+		settingsObject.collide = !settingsObject.collide;
 	}
 }

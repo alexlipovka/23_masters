@@ -6,12 +6,17 @@ class Ball {
 		this.r = r;
 		this.friction = 1;
 		this.bounce_friction = 1;
+		this.collided = false;
 	}
 
 	draw() {
 		fill(150, 150);
-		// stroke(100, 100);
-		noStroke();
+		if(!this.collided) {
+			noStroke();
+		} else {
+			stroke(255, 0, 0);
+			this.collided = false;
+		}
 		ellipse(this.pos.x, this.pos.y, this.r * 2, this.r * 2);
 
 		let f = this.acc.copy();
@@ -38,7 +43,7 @@ class Ball {
 		target.normalize();
 		target.mult(0.1);
 		this.acc = target;
-		if(this.pos.dist(attractor) < 300) {
+		if(this.pos.dist(attractor) < settingsObject.effectField) {
 			this.friction = 1;
 		} else {
 			this.friction = 0.9;
@@ -62,6 +67,7 @@ class Ball {
 			avgVel.div(collisions);
 			this.vel.add(avgVel);
 			this.vel.mult(this.bounce_friction);
+			this.collided = true;
 		}
 		// let targetD = this.r + balls[i].r;
 		// let diff = (targetD - d) / 2;
@@ -87,7 +93,9 @@ update() {
 	this.vel.add(this.acc);
 	this.vel.mult(this.friction);
 	this.pos.add(this.vel);
-	this.touch();
+	if(settingsObject.collide) {
+		this.touch();
+	}
 
 	if (settingsObject.useGlobal) {
 		if (this.pos.x + this.r > width) {
