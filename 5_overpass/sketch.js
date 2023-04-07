@@ -85,11 +85,7 @@ function mouseClicked() {
 	if (keyIsPressed === true && keyCode === CONTROL) {
 		objs.push(myMap.pixelToLatLng(mouseX, mouseY));
 	} else {
-		// Define the area you want to retrieve data for
-		// let area = "52.52,13.40,52.54,13.43"; // This is a bounding box around Berlin, Germany
-		// var area = (coords.lat-0.01) + "," + (coords.lng-0.01) + "," + (coords.lat+0.01) + "," + (coords.lng+0.01);
-		// console.log(area);
-
+		
 		// Define the Overpass query
 		var query = `[out:json];
                		way(around:1, ${coords.lat}, ${coords.lng})["building"];
