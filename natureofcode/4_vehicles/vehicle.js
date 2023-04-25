@@ -6,7 +6,7 @@ class Vehicle {
 		this.pos = pos;
 		this.vel = new p5.Vector(0, 0);
 		this.acc = new p5.Vector(0, 0);
-		this.maxSpeed = Math.random() * MAXSPEED + MAXSPEED/2;
+		this.maxSpeed = Math.random() * MAXSPEED + MAXSPEED / 2;
 		console.log(this.maxSpeed);
 		this.maxForce = Math.random() * 5 + 1;
 		console.log(this.maxForce);
@@ -31,15 +31,17 @@ class Vehicle {
 		endShape(CLOSE);
 		pop();
 	}
-	
+
 	update() {
 		this.vel.add(this.acc);
 		this.vel.limit(this.maxSpeed);
 		this.pos.add(this.vel);
+
 		if(this.pos.x > width) this.pos.x -= width;
 		if(this.pos.x < 0) this.pos.x += width;
 		if(this.pos.y > height) this.pos.y -= height;
 		if(this.pos.y < 0) this.pos.y += height;
+
 		this.acc.mult(0);
 		// console.log(this.vel.mag());
 	}
@@ -47,7 +49,7 @@ class Vehicle {
 	applyForce(force) {
 		let f = force.copy();
 		f.div(this.mass);
-		this.acc.add(f);		
+		this.acc.add(f);
 	}
 
 	seek(target) {
@@ -56,7 +58,7 @@ class Vehicle {
 
 		let d = desired.mag();
 		desired.normalize();
-		if(d < 100) {
+		if (d < 100) {
 			let m = map(d, 0, 100, 0, this.maxSpeed);
 			desired.mult(m);
 		} else {
@@ -68,5 +70,5 @@ class Vehicle {
 		// console.log(steer);
 		this.applyForce(steer);
 	}
-	
+
 }
