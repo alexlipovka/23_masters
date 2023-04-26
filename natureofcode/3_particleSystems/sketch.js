@@ -36,11 +36,6 @@ function setup() {
 	ballsController.add(settingsObject, "effectField", 0, 600).listen();
 	ballsController.add(settingsObject, "collide").listen();
 
-	// repeller = new Repeller(new p5.Vector(width/2, height/2), 100);
-	// attractor = new Attractor(new p5.Vector(width/2, height/2), 50);
-	// console.log(repeller);
-	// console.log(attractor);
-// noLoop()
 }
 
 // Основная функция отрисовки
@@ -51,11 +46,6 @@ function draw() {
 		background(255, settingsObject.backAlpha);
 		blendMode(BLEND);
 	}
-	// noStroke();
-	// fill(240);
-	// circle(attractor.pos.x, attractor.pos.y, settingsObject.effectField * 2);
-	// fill(50);
-	// circle(attractor.pos.x, attractor.pos.y, attractor.r);
 	for(let j = 0; j < repellers.length; j++) {
 		repellers[j].draw();
 	}

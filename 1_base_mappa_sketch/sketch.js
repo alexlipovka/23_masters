@@ -10,7 +10,7 @@ const options = {
 	lng: 93,
 	zoom: 12,
 	// style: 'https://{s}.tile.osm.org/{z}/{x}/{y}.png'
-
+  // WMTS
 	// style: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
 	style: 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
 	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'

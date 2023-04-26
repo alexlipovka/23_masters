@@ -39,6 +39,28 @@ class tileObj {
 	}
 }
 
+let settingsObject = {
+	radius : 10,
+	forces_x : 0.1,
+	forces_y : 0.1,
+	useGlobal : false,
+	cleanBackground : true,
+	backAlpha : 50,
+	playSim : false,
+	effectField: 300,
+	collide: true,
+	offset: {
+		x: 0,
+		y: 0
+	},
+	zOffset: {
+		x: 0,
+		y: 0
+	},
+	zoom: 12,
+	trailLength: 100,
+};
+
 let drawOffset = {
 	canvas: {
 		x: 0,
@@ -126,7 +148,6 @@ function onChangedMap() {
 }
 
 function analyzeTiles() {
-	tiles = [];
 	const regex = /translate\(([-\d]+)px,\s+([-.\d]+)px\)/;
 	const regex3d = /translate3d\(([-\d]+)px,\s+([-.\d]+)px,\s+([-.\d]+)px\)/;
 
@@ -135,64 +156,38 @@ function analyzeTiles() {
 	for (let i = 0; i < zooms; i++) {
 		curZoom = selectAll('.leaflet-zoom-animated')[i].elt.childElementCount > 0 ? i : curZoom;
 	}
+
+	let imgs = document.getElementsByTagName("img");
+
+	let src = imgs[0].src;
+	// let src = selectAll('.leaflet-zoom-animated')[curZoom].elt.src;
+	const zoomRegex = /\/(\d+)\/\d+\/\d+\.png$/;
+	let zoomMatch;
+	if(src)
+		zoomMatch = src.match(zoomRegex);
+		console.log(zoomMatch);
+	if(zoomMatch)
+		settingsObject.zoom = zoomMatch[1];
+		console.log(settingsObject.zoom);
+
+
+
 	let zt = selectAll('.leaflet-zoom-animated')[curZoom].elt.style.transform;
 	let zoomTrans = zt.match(regex3d);
-	drawOffset.zoomed.x = zoomTrans[1];
-	drawOffset.zoomed.y = zoomTrans[2];
+	settingsObject.zOffset.x = zoomTrans[1];
+	settingsObject.zOffset.y = zoomTrans[2];
 
 	tileNum = selectAll('.leaflet-zoom-animated')[curZoom].length;
 	let t = select('#defaultCanvas0').elt.style.transform;
-	// const matches = t.match(regex);
 	let mp = select('.leaflet-map-pane').elt.style.transform;
 	const matches3d = mp.match(regex3d);
 	if (matches3d) {
-		drawOffset.canvas.x = Number(matches3d[1]);
-		drawOffset.canvas.y = Number(matches3d[2]);
+		settingsObject.offset.x = Number(matches3d[1]);
+		settingsObject.offset.y = Number(matches3d[2]);
 	}
-	
-	let imgs = document.getElementsByTagName("img");
-	gridTransform = [];
-	tileColors = [];
-	for (let i = 0; i < imgs.length; i++) {
-		let gt = imgs[i].style.transform.match(regex3d);
-		gridTransform.push([gt[1], gt[2]]);
-		tileColors.push([0, 0, 0, 0]);
-
-		let img = new Image();
-		img.src = imgs[i].src;
-		loadImage(img.src, image => {
-			image.loadPixels();
-			//расчитать среднее значение цвета изображения image.pixels
-			let avgR = 0;
-			let avgG = 0;
-			let avgB = 0;
-			let avgA = 0;
-			for(let p = 0; p < image.pixels.length; p += 4) {
-				avgR += image.pixels[p + 0];
-				avgG += image.pixels[p + 1];
-				avgB += image.pixels[p + 2];
-				avgA += image.pixels[p + 3];
-			}
-			// image.pixels.forEach(pix => {
-			// 	avg += pix;
-			// });
-			avgR /= image.pixels.length / 4;
-			avgG /= image.pixels.length / 4;
-			avgB /= image.pixels.length / 4;
-			avgA /= image.pixels.length / 4;
-			for (let j = 0; j < tiles.length; j++) {
-				if (tiles[j].index == i) {
-					tiles[j].color = [avgR, avgG, avgB, avgA]; //image.get(127, 127); только быстрее
-					tiles[j].img = image;
-					redraw();
-					break;
-				}
-			}
-		});
-		tiles.push(new tileObj(i, 256, 256, [100, 100, 100, 0], gt[1], gt[2]));
-	}
-
-
+	console.log("tiles");
+	console.log(settingsObject.offset);
+	console.log(settingsObject.zOffset);
 }
 
 function drawGrid() {
