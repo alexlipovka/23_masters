@@ -7,6 +7,6 @@ function geoToTiles(lon, lat, zoom) {
 	let yTile = n * (1.-(Math.log(Math.tan(latRad)+1/Math.cos(latRad))/Math.PI))/2.;
 	xTile = Math.floor(xTile) % n;
 	yTile = Math.floor(yTile) % n;
-	console.log(xTile, yTile);
+	// console.log(xTile, yTile);
 	return {xTile, yTile, zoom};
 }
