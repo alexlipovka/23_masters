@@ -4,7 +4,7 @@ class Tile {
 		this.z = z;
 		this.x = x;
 		this.y = y;
-	}	
+	}
 }
 
 class TileQueue {
@@ -12,17 +12,21 @@ class TileQueue {
 		this.z = z;
 		this.x = x;
 		this.y = y;
-	}	
+	}
 }
 
 let img_tiles = [];
 let tile_queue = [];
 
+let Rearth = 6378137.;
 let currentScale = 300;
+let curZ = 3;
+let canvasOffset = {x:0, y:0};
+let pcanvasOffset = JSON.parse(JSON.stringify(canvasOffset));
+let isDragging = false;
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
-	// getImage();
 }
 
 function draw() {
@@ -32,28 +36,42 @@ function draw() {
 	noStroke();
 
 	push();
-		translate(width / 2, height / 2);
-		scale(currentScale);
-		rectMode(CORNERS);
-		rect(-1, -1, 1, 1);
-
-		for(let i = 0; i < img_tiles.length; i++) {
-			// image(img_tiles[i].img, 1, -1, 0.5, 0.5);
-			let n = Math.pow(2, img_tiles[i].z);
-			let offset = 2/n;
-			image(img_tiles[i].img, img_tiles[i].x * offset -1, img_tiles[i].y * offset-1, offset, offset);
-		}
-	pop();
+	translate(canvasOffset.x, canvasOffset.y);
+	translate(width / 2, height / 2);
+	scale(currentScale);
+	rectMode(CORNERS);
+	rect(-1, -1, 1, 1);
 	
-	let x = constrain(map(mouseX, width/2-currentScale, width/2 + currentScale, -1, 1), -1, 1) * 180;
-	let y = constrain(map(mouseY, height/2-currentScale, height/2 + currentScale, 1, -1), -1, 1) * 90	;
+	for (let i = 0; i < img_tiles.length; i++) {
+		let n = Math.pow(2, img_tiles[i].z);
+		let offset = 2 / n;
+		image(img_tiles[i].img, img_tiles[i].x * offset - 1, img_tiles[i].y * offset - 1, offset, offset);
+	}
+	
+	rectMode(CORNER);
+	noFill();
+	stroke(0, 0, 150);
+	strokeWeight(0.003);
+	let n = Math.pow(2, curZ);
+	rectSize = 2 / n;
+	for(let i = 0; i < n; i++) {		
+		for(let j = 0; j < n; j++)
+			rect(i * rectSize - 1, j * rectSize -1, rectSize, rectSize);
+		}
+		stroke(255, 0, 0);
+	rect(0 / (n/2) - 1, 0 / (n/2) -1, rectSize,rectSize);
+
+	pop();
+
+	let geo = screenToGeo();
 	fill(255);
-	text(`${Math.floor(x)} ${Math.floor(y)} \n\n ${img_tiles.length}`, mouseX, mouseY);
-	// let tiles = geoToTiles(x, y, 2);
-	// console.log(tiles);
-	// console.log(geoToTiles(x, y, 1));
-	// text(`${tiles.xTiles} ${tiles.yTiles}`, mouseX, mouseY + 20);
-	// ellipse(mouseX, mouseY, 21, 21);
+	text(`${Math.floor(geo.x)} ${Math.floor(geo.y)} \n\n ${img_tiles.length}`, mouseX, mouseY);
+	let tileInfo = geoToTiles(geo.x, geo.y, curZ)
+	text(`xTile: ${tileInfo.xTile}, yTile: ${tileInfo.yTile}, zoom: ${tileInfo.zoom}`, mouseX, mouseY-30);
+	fill(255, 0, 0);
+	noStroke();
+	circle(mouseX, mouseY, 6);
+
 	cleanTiles();
 }
 
@@ -61,61 +79,101 @@ function windowResized() {
 	resizeCanvas(windowWidth, windowHeight);
 }
 
+function screenToGeo() {
+	let x = constrain(map(mouseX, width / 2 - currentScale, width / 2 + currentScale, -1, 1), -1, 1) * 180;
+	let y = constrain(map(mouseY, height / 2 - currentScale, height / 2 + currentScale, 1, -1), -1, 1);
+	y *= 20000000;
+	y = (2 * Math.atan(Math.exp(y/Rearth))-Math.PI/2) * (180 / Math.PI);
+	return {x, y};
+}
+
 function mouseDragged() {
-	let x = constrain(map(mouseX, width/2-currentScale, width/2 + currentScale, -1, 1), -1, 1) * 180;
-	let y = constrain(map(mouseY, height/2-currentScale, height/2 + currentScale, 1, -1), -1, 1) * 90	;
-	let zoom = Math.floor(random(6, 12));
-	getTile(geoToTiles(x, y, zoom))
-	// console.log(x, y);
+	if (mouseButton === LEFT) {
+		let geo = screenToGeo();
+		// let zoom = Math.floor(random(curZ, curZ + 4));
+		getTile(geoToTiles(geo.x, geo.y, curZ))
+	}
+}
+
+function mousePressed() {
+	if(mouseButton === CENTER) {
+		isDragging = true;
+		pcanvasOffset.x = mouseX;
+		pcanvasOffset.y = mouseY;
+	}
+	
+}
+
+function mouseReleased() {
+	if(mouseButton === CENTER) {
+		isDragging = false;
+		canvasOffset.x = mouseX - pcanvasOffset.x;
+		canvasOffset.y = mouseY - pcanvasOffset.y;
+	}
 }
 
 function mouseWheel(event) {
-	currentScale += event.delta * 2;
+	currentScale *= event.delta > 0 ? 2 : 0.5;
 }
 
 function getImage(z, x, y) {
 	let img = new Image();
-	img.src = `https://a.tile.osm.org/${z}/${x}/${y}.png`;
+	let choice = Math.floor(random(7));
+	if(choice === 0) {
+		img.src = `https://a.tile.osm.org/${z}/${x}/${y}.png`;
+	} else if(choice === 1)  {
+		img.src = `http://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`;
+	} else if(choice === 2)  {
+		img.src = `http://a.basemaps.cartocdn.com/light_all/${z}/${x}/${y}.png`;
+	} else if(choice === 3)  {
+		img.src = `http://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`;
+	}  else if(choice === 4)  {
+		img.src = `https://stamen-tiles.a.ssl.fastly.net/toner/${z}/${x}/${y}.png`;
+	} else if(choice === 5)  {
+		img.src = `https://stamen-tiles.a.ssl.fastly.net/terrain/${z}/${x}/${y}.png`;
+	} else if(choice === 6)  {
+		img.src = `https://stamen-tiles.a.ssl.fastly.net/watercolor/${z}/${x}/${y}.png`;
+	} 
 	loadImage(img.src, image => {
-		// state.imgs.push(image);
-		// state.imgLoaded = true;
-		// console.log(state);	
 		img_tiles.push(new Tile(image, z, x, y));
 		sortTiles();
 	});
 }
 
 function sortTiles() {
-	img_tiles.sort(function(a, b) { return a.z - b.z;})
+	img_tiles.sort(function (a, b) { return a.z - b.z; })
 }
 
-function getTile({xTile, yTile, zoom}) {
+function getTile({ xTile, yTile, zoom }) {
 	let download = true;
-	for(let i = 0; i < tile_queue.length; i++) {
-			if(tile_queue[i].z == zoom && tile_queue[i].x == xTile && tile_queue[i].y == yTile) {
-				download = false;
-				break;
-			}
+	for (let i = 0; i < tile_queue.length; i++) {
+		if (tile_queue[i].z == zoom && tile_queue[i].x == xTile && tile_queue[i].y == yTile) {
+			download = false;
+			break;
+		}
 	}
-	if(download) {
+	if (download) {
 		tile_queue.push(new TileQueue(zoom, xTile, yTile));
-		getImage(zoom, xTile, yTile);
-		// let img = new Image();
-		// let rand = Math.random();
-		// let s = rand > 0.33 ? (rand > 0.66 ? 'c' : 'b') : 'a' ;
-		
-		// img.src = `http://${s}.basemaps.cartocdn.com/dark_all/${zoom}/${xTile}/${yTile}.png`;
-		// console.log(img.src);
+		getImage(zoom, xTile, yTile);		
 	}
 }
 
 function cleanTiles() {
-	for(let i = 0; i < img_tiles.length; i++) {
-		for(let j = i+1; j < img_tiles.length; j++) {
-			if(img_tiles[i].z == img_tiles[j].z && img_tiles[i].x == img_tiles[j].x && img_tiles[i].y == img_tiles[j].y) {
+	for (let i = 0; i < img_tiles.length; i++) {
+		for (let j = i + 1; j < img_tiles.length; j++) {
+			if (img_tiles[i].z == img_tiles[j].z && img_tiles[i].x == img_tiles[j].x && img_tiles[i].y == img_tiles[j].y) {
 				img_tiles.splice(j, 1);
 				j--;
 			}
 		}
+	}
+}
+
+function keyPressed() {
+	if(key === '+') {
+		curZ += 1;
+	}
+	else if(key === '-') {
+		curZ -= 1;
 	}
 }
