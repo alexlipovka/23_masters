@@ -25,10 +25,12 @@ let isDragging = false;
 let center;
 let pCenter;
 
+
 function setup() {
 	createCanvas(windowWidth, windowHeight);
 	center = new p5.Vector(width/2, height/2);
 	pCenter = center.copy();
+	 
 }
 
 function draw() {
@@ -38,10 +40,8 @@ function draw() {
 	noStroke();
 
 	push();
-	// translate(canvasOffset.x, canvasOffset.y);
 	if(isDragging) {
 		let diff = new p5.Vector(mouseX, mouseY).sub(pCenter);
-		// diff.mult(currentScale);
 		translate(diff.x, diff.y);
 	}
 	translate(center.x, center.y);
@@ -88,7 +88,6 @@ function windowResized() {
 
 function screenToGeo() {	
 	let offset = new p5.Vector(width/2, height/2).sub(center);
-	console.log(offset);
 	let x = constrain(map(mouseX+offset.x, width / 2 - currentScale, width / 2 + currentScale, -1, 1), -1, 1) * 180;
 	let y = constrain(map(mouseY+offset.y, height / 2 - currentScale, height / 2 + currentScale, 1, -1), -1, 1);
 	y *= 20000000;
@@ -127,23 +126,20 @@ function mouseWheel(event) {
 }
 
 function getImage(z, x, y) {
+	let tileServers = [	
+		`https://a.tile.osm.org/${z}/${x}/${y}.png`,
+		`http://a.basemaps.cartocdn.com/light_all/${z}/${x}/${y}.png`,
+		`http://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`,
+		`https://stamen-tiles.a.ssl.fastly.net/terrain/${z}/${x}/${y}.png`,
+		`https://stamen-tiles.a.ssl.fastly.net/watercolor/${z}/${x}/${y}.png`];
+	// 	`http://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`,
+	// 	`https://stamen-tiles.a.ssl.fastly.net/toner/${z}/${x}/${y}.png`,
+	// ]
 	let img = new Image();
-	let choice = Math.floor(random(7));
-	if(choice === 0) {
-		img.src = `https://a.tile.osm.org/${z}/${x}/${y}.png`;
-	} else if(choice === 1)  {
-		img.src = `http://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`;
-	} else if(choice === 2)  {
-		img.src = `http://a.basemaps.cartocdn.com/light_all/${z}/${x}/${y}.png`;
-	} else if(choice === 3)  {
-		img.src = `http://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`;
-	}  else if(choice === 4)  {
-		img.src = `https://stamen-tiles.a.ssl.fastly.net/toner/${z}/${x}/${y}.png`;
-	} else if(choice === 5)  {
-		img.src = `https://stamen-tiles.a.ssl.fastly.net/terrain/${z}/${x}/${y}.png`;
-	} else if(choice === 6)  {
-		img.src = `https://stamen-tiles.a.ssl.fastly.net/watercolor/${z}/${x}/${y}.png`;
-	} 
+
+	let choice = Math.floor(random(tileServers.length));
+	img.src = tileServers[choice];
+	
 	loadImage(img.src, image => {
 		img_tiles.push(new Tile(image, z, x, y));
 		sortTiles();
