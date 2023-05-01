@@ -21,12 +21,14 @@ let tile_queue = [];
 let Rearth = 6378137.;
 let currentScale = 300;
 let curZ = 3;
-let canvasOffset = {x:0, y:0};
-let pcanvasOffset = JSON.parse(JSON.stringify(canvasOffset));
 let isDragging = false;
+let center;
+let pCenter;
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
+	center = new p5.Vector(width/2, height/2);
+	pCenter = center.copy();
 }
 
 function draw() {
@@ -36,8 +38,13 @@ function draw() {
 	noStroke();
 
 	push();
-	translate(canvasOffset.x, canvasOffset.y);
-	translate(width / 2, height / 2);
+	// translate(canvasOffset.x, canvasOffset.y);
+	if(isDragging) {
+		let diff = new p5.Vector(mouseX, mouseY).sub(pCenter);
+		// diff.mult(currentScale);
+		translate(diff.x, diff.y);
+	}
+	translate(center.x, center.y);
 	scale(currentScale);
 	rectMode(CORNERS);
 	rect(-1, -1, 1, 1);
@@ -51,7 +58,7 @@ function draw() {
 	rectMode(CORNER);
 	noFill();
 	stroke(0, 0, 150);
-	strokeWeight(0.003);
+	strokeWeight(1/currentScale);
 	let n = Math.pow(2, curZ);
 	rectSize = 2 / n;
 	for(let i = 0; i < n; i++) {		
@@ -79,9 +86,11 @@ function windowResized() {
 	resizeCanvas(windowWidth, windowHeight);
 }
 
-function screenToGeo() {
-	let x = constrain(map(mouseX, width / 2 - currentScale, width / 2 + currentScale, -1, 1), -1, 1) * 180;
-	let y = constrain(map(mouseY, height / 2 - currentScale, height / 2 + currentScale, 1, -1), -1, 1);
+function screenToGeo() {	
+	let offset = new p5.Vector(width/2, height/2).sub(center);
+	console.log(offset);
+	let x = constrain(map(mouseX+offset.x, width / 2 - currentScale, width / 2 + currentScale, -1, 1), -1, 1) * 180;
+	let y = constrain(map(mouseY+offset.y, height / 2 - currentScale, height / 2 + currentScale, 1, -1), -1, 1);
 	y *= 20000000;
 	y = (2 * Math.atan(Math.exp(y/Rearth))-Math.PI/2) * (180 / Math.PI);
 	return {x, y};
@@ -93,13 +102,13 @@ function mouseDragged() {
 		// let zoom = Math.floor(random(curZ, curZ + 4));
 		getTile(geoToTiles(geo.x, geo.y, curZ))
 	}
+	
 }
 
 function mousePressed() {
 	if(mouseButton === CENTER) {
 		isDragging = true;
-		pcanvasOffset.x = mouseX;
-		pcanvasOffset.y = mouseY;
+		pCenter.set(mouseX, mouseY);
 	}
 	
 }
@@ -107,8 +116,9 @@ function mousePressed() {
 function mouseReleased() {
 	if(mouseButton === CENTER) {
 		isDragging = false;
-		canvasOffset.x = mouseX - pcanvasOffset.x;
-		canvasOffset.y = mouseY - pcanvasOffset.y;
+		let diff = new p5.Vector(mouseX, mouseY).sub(pCenter);
+		center.add(diff);
+		pCenter.set(center);
 	}
 }
 
