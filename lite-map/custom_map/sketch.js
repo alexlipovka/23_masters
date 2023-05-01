@@ -122,19 +122,28 @@ function mouseReleased() {
 }
 
 function mouseWheel(event) {
+	if(event.delta < 0) {
+		let diff = new p5.Vector(mouseX, mouseY).sub(center);
+		diff.mult(0.5);
+		center.add(diff);		
+	} else {
+		let diff = new p5.Vector(mouseX, mouseY).sub(center);
+		diff.mult(1);
+		center.sub(diff);		
+	}
+	// let diff = center.sub(new p5.Vector(mouseX, mouseY));
 	currentScale *= event.delta > 0 ? 2 : 0.5;
 }
 
 function getImage(z, x, y) {
 	let tileServers = [	
 		`https://a.tile.osm.org/${z}/${x}/${y}.png`,
-		`http://a.basemaps.cartocdn.com/light_all/${z}/${x}/${y}.png`,
-		`http://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`,
+		`https://a.basemaps.cartocdn.com/light_all/${z}/${x}/${y}.png`,
+		`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`,
 		`https://stamen-tiles.a.ssl.fastly.net/terrain/${z}/${x}/${y}.png`,
-		`https://stamen-tiles.a.ssl.fastly.net/watercolor/${z}/${x}/${y}.png`];
-	// 	`http://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`,
-	// 	`https://stamen-tiles.a.ssl.fastly.net/toner/${z}/${x}/${y}.png`,
-	// ]
+		`https://stamen-tiles.a.ssl.fastly.net/watercolor/${z}/${x}/${y}.png`,//];
+		`http://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`,
+		`https://stamen-tiles.a.ssl.fastly.net/toner/${z}/${x}/${y}.png`];
 	let img = new Image();
 
 	let choice = Math.floor(random(tileServers.length));
