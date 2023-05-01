@@ -11,10 +11,15 @@
 
 ### По мотивам книги «The Nature Of Code»
 
-- [natureofcode/0_ball](https://github.com/alexlipovka/23_masters/tree/main/natureofcode/0_ball) — Знакомство с векторами, гравитацией, анимацией
-- [natureofcode/1_ball](https://github.com/alexlipovka/23_masters/tree/main/natureofcode/1_ball) — Создаем массив объектов
-- [natureofcode/2_attractor](https://github.com/alexlipovka/23_masters/tree/main/natureofcode/2_attractor) — Вместо общего поля вводим аттрактор и интерфейс на p5.GUI
-- [natureofcode/2_attractor_datGUI](https://github.com/alexlipovka/23_masters/tree/main/natureofcode/2_attractor_datGUI) — Вместо общего поля вводим аттрактор и интерфейс на dat.GUI
+- [Nature of Code](https://github.com/alexlipovka/23_masters/tree/main/natureofcode)
+  - [natureofcode/0_ball](https://github.com/alexlipovka/23_masters/tree/main/natureofcode/0_ball) — Знакомство с векторами, гравитацией, анимацией
+  - [natureofcode/1_ball](https://github.com/alexlipovka/23_masters/tree/main/natureofcode/1_ball) — Создаем массив объектов
+  - [natureofcode/2_attractor](https://github.com/alexlipovka/23_masters/tree/main/natureofcode/2_attractor) — Вместо общего поля вводим аттрактор и интерфейс на p5.GUI
+  - [natureofcode/2_attractor_datGUI](https://github.com/alexlipovka/23_masters/tree/main/natureofcode/2_attractor_datGUI) — Вместо общего поля вводим аттрактор и интерфейс на dat.GUI
+
+## Загрузка геоданных через Overpass API
+
+- [OSM](https://github.com/alexlipovka/23_masters/tree/main/OSM)
 
 ## Установка внешних библиотек
 
