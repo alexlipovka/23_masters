@@ -3,7 +3,7 @@ function makeQueryFromArea(areaName) {
 	[out:json][timeout:25];
 	area[name="${areaName}"]->.a;
 	nwr(area.a)["historic"];
-	out center geom;
+	out geom;
 	`
 	return query;
 }
