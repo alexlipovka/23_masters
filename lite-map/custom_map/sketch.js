@@ -28,9 +28,9 @@ let pCenter;
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
-	center = new p5.Vector(width/2, height/2);
+	center = new p5.Vector(width / 2, height / 2);
 	pCenter = center.copy();
-	 
+
 }
 
 function draw() {
@@ -40,7 +40,7 @@ function draw() {
 	noStroke();
 
 	push();
-	if(isDragging) {
+	if (isDragging) {
 		let diff = new p5.Vector(mouseX, mouseY).sub(pCenter);
 		translate(diff.x, diff.y);
 	}
@@ -48,25 +48,25 @@ function draw() {
 	scale(currentScale);
 	rectMode(CORNERS);
 	rect(-1, -1, 1, 1);
-	
+
 	for (let i = 0; i < img_tiles.length; i++) {
 		let n = Math.pow(2, img_tiles[i].z);
 		let offset = 2 / n;
 		image(img_tiles[i].img, img_tiles[i].x * offset - 1, img_tiles[i].y * offset - 1, offset, offset);
 	}
-	
-	rectMode(CORNER);
+
 	noFill();
 	stroke(0, 0, 150);
-	strokeWeight(1/currentScale);
+	strokeWeight(1 / currentScale);
 	let n = Math.pow(2, curZ);
 	rectSize = 2 / n;
-	for(let i = 0; i < n; i++) {		
-		for(let j = 0; j < n; j++)
-			rect(i * rectSize - 1, j * rectSize -1, rectSize, rectSize);
-		}
-		stroke(255, 0, 0);
-	rect(0 / (n/2) - 1, 0 / (n/2) -1, rectSize,rectSize);
+	for (let i = 0; i <= n; i++) {
+		line(-1, i * rectSize - 1, 1, i * rectSize - 1);
+		line(i * rectSize - 1, -1, i * rectSize - 1, 1);
+	}
+	stroke(255, 0, 0);
+	rectMode(CORNER);
+	rect(0 / (n / 2) - 1, 0 / (n / 2) - 1, rectSize, rectSize);
 
 	pop();
 
@@ -74,7 +74,7 @@ function draw() {
 	fill(255);
 	text(`${Math.floor(geo.x)} ${Math.floor(geo.y)} \n\n ${img_tiles.length}`, mouseX, mouseY);
 	let tileInfo = geoToTiles(geo.x, geo.y, curZ)
-	text(`xTile: ${tileInfo.xTile}, yTile: ${tileInfo.yTile}, zoom: ${tileInfo.zoom}`, mouseX, mouseY-30);
+	text(`xTile: ${tileInfo.xTile}, yTile: ${tileInfo.yTile}, zoom: ${tileInfo.zoom}`, mouseX, mouseY - 30);
 	fill(255, 0, 0);
 	noStroke();
 	circle(mouseX, mouseY, 6);
@@ -86,13 +86,13 @@ function windowResized() {
 	resizeCanvas(windowWidth, windowHeight);
 }
 
-function screenToGeo() {	
-	let offset = new p5.Vector(width/2, height/2).sub(center);
-	let x = constrain(map(mouseX+offset.x, width / 2 - currentScale, width / 2 + currentScale, -1, 1), -1, 1) * 180;
-	let y = constrain(map(mouseY+offset.y, height / 2 - currentScale, height / 2 + currentScale, 1, -1), -1, 1);
+function screenToGeo() {
+	let offset = new p5.Vector(width / 2, height / 2).sub(center);
+	let x = constrain(map(mouseX + offset.x, width / 2 - currentScale, width / 2 + currentScale, -1, 1), -1, 1) * 180;
+	let y = constrain(map(mouseY + offset.y, height / 2 - currentScale, height / 2 + currentScale, 1, -1), -1, 1);
 	y *= 20000000;
-	y = (2 * Math.atan(Math.exp(y/Rearth))-Math.PI/2) * (180 / Math.PI);
-	return {x, y};
+	y = (2 * Math.atan(Math.exp(y / Rearth)) - Math.PI / 2) * (180 / Math.PI);
+	return { x, y };
 }
 
 function mouseDragged() {
@@ -101,19 +101,19 @@ function mouseDragged() {
 		// let zoom = Math.floor(random(curZ, curZ + 4));
 		getTile(geoToTiles(geo.x, geo.y, curZ))
 	}
-	
+
 }
 
 function mousePressed() {
-	if(mouseButton === CENTER) {
+	if (mouseButton === CENTER) {
 		isDragging = true;
 		pCenter.set(mouseX, mouseY);
 	}
-	
+
 }
 
 function mouseReleased() {
-	if(mouseButton === CENTER) {
+	if (mouseButton === CENTER) {
 		isDragging = false;
 		let diff = new p5.Vector(mouseX, mouseY).sub(pCenter);
 		center.add(diff);
@@ -122,21 +122,21 @@ function mouseReleased() {
 }
 
 function mouseWheel(event) {
-	if(event.delta < 0) {
+	if (event.delta < 0) {
 		let diff = new p5.Vector(mouseX, mouseY).sub(center);
 		diff.mult(0.5);
-		center.add(diff);		
+		center.add(diff);
 	} else {
 		let diff = new p5.Vector(mouseX, mouseY).sub(center);
 		diff.mult(1);
-		center.sub(diff);		
+		center.sub(diff);
 	}
 	// let diff = center.sub(new p5.Vector(mouseX, mouseY));
 	currentScale *= event.delta > 0 ? 2 : 0.5;
 }
 
 function getImage(z, x, y) {
-	let tileServers = [	
+	let tileServers = [
 		`https://a.tile.osm.org/${z}/${x}/${y}.png`,
 		`https://a.basemaps.cartocdn.com/light_all/${z}/${x}/${y}.png`,
 		`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`,
@@ -148,7 +148,7 @@ function getImage(z, x, y) {
 
 	let choice = Math.floor(random(tileServers.length));
 	img.src = tileServers[choice];
-	
+
 	loadImage(img.src, image => {
 		img_tiles.push(new Tile(image, z, x, y));
 		sortTiles();
@@ -169,7 +169,7 @@ function getTile({ xTile, yTile, zoom }) {
 	}
 	if (download) {
 		tile_queue.push(new TileQueue(zoom, xTile, yTile));
-		getImage(zoom, xTile, yTile);		
+		getImage(zoom, xTile, yTile);
 	}
 }
 
@@ -185,10 +185,10 @@ function cleanTiles() {
 }
 
 function keyPressed() {
-	if(key === '+') {
+	if (key === '+') {
 		curZ += 1;
 	}
-	else if(key === '-') {
+	else if (key === '-') {
 		curZ -= 1;
 	}
 }
