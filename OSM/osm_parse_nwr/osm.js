@@ -8,6 +8,15 @@ function makeQueryFromArea(areaName) {
 	return query;
 }
 
+function makeQueryFromCoords(coords, tag='building') {
+	var query = `
+	[out:json][timeout:25];
+	nwr(around:3, ${coords.lat}, ${coords.lng})[${tag}];
+	out geom;
+	`;
+	return query;
+}
+
 function queryOSM(query) {
 	fetch("https://overpass-api.de/api/interpreter", {
 		method: "POST",
@@ -47,7 +56,7 @@ function parseRelation(rel) {
 function parseWay(way) {
 	console.log('Way');
 	let vts = [];
-	for (let i = 0; i < way.geometry.length - 1; i++) {
+	for (let i = 0; i < way.geometry.length; i++) {
 		let vert = way.geometry[i];
 		vts.push([vert.lat, vert.lon]);
 	}

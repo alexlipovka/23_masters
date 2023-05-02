@@ -4,29 +4,29 @@ let myMap;
 let canvas;
 // Объект mappa
 const mappa = new Mappa('Leaflet');
+
+let serverList = {
+	'osm' : 'https://{s}.tile.osm.org/{z}/{x}/{y}.png',
+	'light' : 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+	'dark' : 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+	'voyager' : 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+	'light_nolabels' : 'http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',
+	'light_only_labels' : 'http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png',
+	'dark_nolabels' : 'http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
+	'dark_only_labels' : 'http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png',
+	'voyager_nolabels' : 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
+	'voyager_only_labels' : 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png',
+	'voyager_labels_under' : 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png',
+	'toner': 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png',
+	'terrain' : 'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png',
+	'watercolor' : 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png'
+};
 // Дополнительные настройки карты (координаты центра, масштаб, сервер)
 const options = {
-	lat: 45.35,
-	lng: 36.47,
-	// lat: 56,
-	// lng: 93,
+	lat: 56,
+	lng: 93,
 	zoom: 15,
-	style: 'https://{s}.tile.osm.org/{z}/{x}/{y}.png'
-
-	// style: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-	// style: 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
-	// style: 'http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png'
-	// style: 'http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png'
-	// style: 'http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png'
-	// style: 'http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png'
-	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png'
-	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png'
-	// style: 'http://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png'
-
-	// style: 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
-	// style: 'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png'
-	// style: 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png'
+	style: serverList['osm'],
 };
 
 let polys = [];
@@ -42,7 +42,7 @@ function setup() {
 	myMap.overlay(canvas);
 	myMap.onChange(onChangedMap);
 
-	queryOSM(makeQueryFromArea("Керчь"));
+	queryOSM(makeQueryFromArea("Красноярск"));
 }
 
 // Основная функция отрисовки
@@ -83,6 +83,7 @@ function windowResized() {
 }
 
 function mouseClicked() {
+	queryOSM(makeQueryFromCoords(myMap.pixelToLatLng(mouseX, mouseY), 'industrial'));
 }
 
 function keyPressed() {
