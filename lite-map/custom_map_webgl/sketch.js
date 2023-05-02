@@ -89,6 +89,8 @@ function draw() {
 
 	pop();
 
+	//TEXT OUT
+	//TODO: сделать рендер текста нормальный
 	let geo = screenToGeo();
 	fill(255);
 	text(`${Math.floor(geo.x)} ${Math.floor(geo.y)} \n\n ${img_tiles.length}`, mouseX, mouseY);
