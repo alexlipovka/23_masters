@@ -36,7 +36,7 @@
 ### Самостоятельная загрузка тайлов с WMTS-серверов
 
 - [Lite-map](https://github.com/alexlipovka/23_masters/tree/main/lite-map)
-  - [Tile Mosaic](https://github.com/alexlipovka/23_masters/tree/main/lite-map/custom_map)		
+  - [Tile Mosaic](./23_masters/lite-map/custom_map)		
 
 ## Установка внешних библиотек
 
