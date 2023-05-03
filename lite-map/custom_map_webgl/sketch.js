@@ -20,11 +20,16 @@ let tile_queue = [];
 
 let Rearth = 6378137.;
 let currentScale = 300;
-let curZ = 3;
+let curZ = 0;
 let isDragging = false;
 let center;
 let pCenter;
 
+let myFont;
+
+function preload() {
+	myFont = loadFont('./assets/Roboto-Regular.ttf');
+}
 
 function setup() {
 	createCanvas(windowWidth, windowHeight, WEBGL);
@@ -32,7 +37,6 @@ function setup() {
 	// center = new p5.Vector(width / 2, height / 2);
 	center = new p5.Vector(0, 0);
 	pCenter = center.copy();
-
 }
 
 function draw() {
@@ -91,15 +95,19 @@ function draw() {
 
 	//TEXT OUT
 	//TODO: сделать рендер текста нормальный
+	push();
+	translate(0, 0, 1);
 	let geo = screenToGeo();
+  textFont(myFont);
+  textSize(14);
 	fill(255);
-	text(`${Math.floor(geo.x)} ${Math.floor(geo.y)} \n\n ${img_tiles.length}`, mouseX, mouseY);
+	text(`${Math.floor(geo.x)} ${Math.floor(geo.y)} \n\n Загружено: ${img_tiles.length} шт.`, mouseX-width/2, mouseY-height/2 - 5);
 	let tileInfo = geoToTiles(geo.x, geo.y, curZ)
-	text(`xTile: ${tileInfo.xTile}, yTile: ${tileInfo.yTile}, zoom: ${tileInfo.zoom}`, mouseX, mouseY - 30);
+	text(`xTile: ${tileInfo.xTile}, yTile: ${tileInfo.yTile}, zoom: ${tileInfo.zoom}`, mouseX - width / 2, mouseY - height/2 - 20);
 	fill(255, 0, 0);
 	noStroke();
 	circle(mouseX - width / 2, mouseY - height / 2, 6);
-
+	pop();
 	cleanTiles();
 }
 
