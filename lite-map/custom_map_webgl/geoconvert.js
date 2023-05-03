@@ -10,3 +10,13 @@ function geoToTiles(lon, lat, zoom) {
 	// console.log(xTile, yTile);
 	return {xTile, yTile, zoom};
 }
+
+function screenToGeo() {
+	// let offset = new p5.Vector(width / 2, height / 2).sub(center);
+	let offset = new p5.Vector(0, 0).sub(center);
+	let x = constrain(map(mouseX + offset.x, width / 2 - currentScale, width / 2 + currentScale, -1, 1), -1, 1) * 180;
+	let y = constrain(map(mouseY + offset.y, height / 2 - currentScale, height / 2 + currentScale, 1, -1), -1, 1);
+	y *= 20000000;//19589163.58;
+	y = (2 * Math.atan(Math.exp(y / Rearth)) - Math.PI / 2) * (180 / Math.PI);
+	return { x, y };
+}

@@ -25,7 +25,7 @@ function queryOSM(query) {
 	})
 		.then((response) => response.json()) // Parse the response as JSON
 		.then((data) => {
-			console.log(data);
+			// console.log(data);
 			for (let i = 0; i < data.elements.length; i++) {
 				let el = data.elements[i];
 				console.log(el);

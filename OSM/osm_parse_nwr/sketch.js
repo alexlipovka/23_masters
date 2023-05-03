@@ -42,7 +42,7 @@ function setup() {
 	myMap.overlay(canvas);
 	myMap.onChange(onChangedMap);
 
-	queryOSM(makeQueryFromArea("Красноярск"));
+	queryOSM(makeQueryFromArea("Керчь"));
 }
 
 // Основная функция отрисовки
@@ -52,15 +52,18 @@ function draw() {
 	clear();
 
 	polys.forEach(poly => {
-		stroke(150);
-		fill(255, 0, 0);
+		// stroke(150);
+		stroke(255, 0, 0);
+
+		// fill(255, 0, 0);
+		noFill();
 		beginShape();
 		poly.forEach(vert => {
 			let pt = myMap.latLngToPixel(vert);
 			// circle(pt.x, pt.y, 5);
 			vertex(pt.x, pt.y);
 		});
-		endShape(CLOSE);
+		endShape(LINES);
 	});
 
 	nodes.forEach(node => {
@@ -83,7 +86,7 @@ function windowResized() {
 }
 
 function mouseClicked() {
-	queryOSM(makeQueryFromCoords(myMap.pixelToLatLng(mouseX, mouseY), 'industrial'));
+	queryOSM(makeQueryFromCoords(myMap.pixelToLatLng(mouseX, mouseY), 'highway'));
 }
 
 function keyPressed() {
