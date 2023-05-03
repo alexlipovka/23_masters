@@ -1,3 +1,29 @@
+function getWMTS(x, y, z, serverName = 'osm') {
+	let prefix = ['a', 'b', 'c'];
+	let s = prefix[Math.floor(random(prefix.length))];
+	
+	switch (serverName) {
+		case 'osm': return `https://${s}.tile.osm.org/${z}/${x}/${y}.png`;
+		case 'light': return `http://${s}.basemaps.cartocdn.com/light_all/${z}/${x}/${y}.png`;
+		case 'dark': return `http://${s}.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`;
+		case 'voyager': return `http://${s}.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`;
+		case 'light_nolabels': return `http://${s}.basemaps.cartocdn.com/light_nolabels/${z}/${x}/${y}.png`;
+		case 'light_only_labels': return `http://${s}.basemaps.cartocdn.com/light_only_labels/${z}/${x}/${y}.png`;
+		case 'dark_nolabels': return `http://${s}.basemaps.cartocdn.com/dark_nolabels/${z}/${x}/${y}.png`;
+		case 'dark_only_labels': return `http://${s}.basemaps.cartocdn.com/dark_only_labels/${z}/${x}/${y}.png`;
+		case 'voyager_nolabels': return `http://${s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/${z}/${x}/${y}.png`;
+		case 'voyager_only_labels': return `http://${s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/${z}/${x}/${y}.png`;
+		case 'voyager_labels_under': return `http://${s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/${z}/${x}/${y}.png`;
+		case 'toner': return `https://stamen-tiles.a.ssl.fastly.net/toner/${z}/${x}/${y}.png`;
+		case 'terrain': return `https://stamen-tiles.a.ssl.fastly.net/terrain/${z}/${x}/${y}.png`;
+		case 'watercolor': return `https://stamen-tiles.a.ssl.fastly.net/watercolor/${z}/${x}/${y}.png`;
+		case 'yandex_sat': return `https://sat04.maps.yandex.net/tiles?l=sat&x=${x}&y=${y}&z=${z}`;
+		case 'yandex_traffic' : return `https://core-jams-rdr-cache.maps.yandex.net/1.1/tiles?l=trf&x=${x}&y=${y}&z=${z}`;
+		case 'yandex_gps' : return `https://core-gpstiles.maps.yandex.net/tiles?style=point&x=${x}&y=${y}&z=${z}`;
+		default: return `https://${s}.tile.osm.org/${z}/${x}/${y}.png`;
+	}
+}
+
 class Tile {
 	constructor(img, z, x, y) {
 		this.img = img;
@@ -61,12 +87,14 @@ function draw() {
 		// image(img_tiles[i].img, img_tiles[i].x * offset - 1, img_tiles[i].y * offset - 1, offset, offset);
 		push();
 		texture(img_tiles[i].img);
-		translate(img_tiles[i].x * offset - 1  + offset/2, img_tiles[i].y * offset - 1  + offset/2);
+		translate(img_tiles[i].x * offset - 1 + offset / 2, img_tiles[i].y * offset - 1 + offset / 2);
 		translate(0, 0, img_tiles[i].z / 1000);
 		plane(offset, offset);
 		pop();
 		// image(img_tiles[i].img, img_tiles[i].x * offset - 1, img_tiles[i].y * offset - 1, offset, offset);
 	}
+
+	//Сетка
 	translate(0, 0, 0.01);
 	noFill();
 	stroke(0, 0, 150);
@@ -98,12 +126,12 @@ function draw() {
 	push();
 	translate(0, 0, 1);
 	let geo = screenToGeo();
-  textFont(myFont);
-  textSize(14);
+	textFont(myFont);
+	textSize(14);
 	fill(255);
-	text(`${Math.floor(geo.x)} ${Math.floor(geo.y)} \n\n Загружено: ${img_tiles.length} шт.`, mouseX-width/2, mouseY-height/2 - 5);
+	text(`${Math.floor(geo.x)} ${Math.floor(geo.y)} \n\n Загружено: ${img_tiles.length} шт.`, mouseX - width / 2, mouseY - height / 2 - 5);
 	let tileInfo = geoToTiles(geo.x, geo.y, curZ)
-	text(`xTile: ${tileInfo.xTile}, yTile: ${tileInfo.yTile}, zoom: ${tileInfo.zoom}`, mouseX - width / 2, mouseY - height/2 - 20);
+	text(`xTile: ${tileInfo.xTile}, yTile: ${tileInfo.yTile}, zoom: ${tileInfo.zoom}`, mouseX - width / 2, mouseY - height / 2 - 20);
 	fill(255, 0, 0);
 	noStroke();
 	circle(mouseX - width / 2, mouseY - height / 2, 6);
@@ -115,15 +143,7 @@ function windowResized() {
 	resizeCanvas(windowWidth, windowHeight);
 }
 
-function screenToGeo() {
-	// let offset = new p5.Vector(width / 2, height / 2).sub(center);
-	let offset = new p5.Vector(0, 0).sub(center);
-	let x = constrain(map(mouseX + offset.x, width / 2 - currentScale, width / 2 + currentScale, -1, 1), -1, 1) * 180;
-	let y = constrain(map(mouseY + offset.y, height / 2 - currentScale, height / 2 + currentScale, 1, -1), -1, 1);
-	y *= 20000000;
-	y = (2 * Math.atan(Math.exp(y / Rearth)) - Math.PI / 2) * (180 / Math.PI);
-	return { x, y };
-}
+
 
 function mouseDragged() {
 	if (mouseButton === LEFT) {
@@ -167,18 +187,10 @@ function mouseWheel(event) {
 }
 
 function getImage(z, x, y) {
-	let tileServers = [
-		`https://a.tile.osm.org/${z}/${x}/${y}.png`,
-		`https://a.basemaps.cartocdn.com/light_all/${z}/${x}/${y}.png`,
-		`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`,
-		`https://stamen-tiles.a.ssl.fastly.net/terrain/${z}/${x}/${y}.png`,
-		`https://stamen-tiles.a.ssl.fastly.net/watercolor/${z}/${x}/${y}.png`,//];
-		`http://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`,
-		`https://stamen-tiles.a.ssl.fastly.net/toner/${z}/${x}/${y}.png`];
 	let img = new Image();
 
 	let choice = Math.floor(random(tileServers.length));
-	img.src = tileServers[choice];
+	img.src = getWMTS(x, y, z, tileNames[Math.floor(random(tileNames.length))]);
 
 	loadImage(img.src, image => {
 		img_tiles.push(new Tile(image, z, x, y));
