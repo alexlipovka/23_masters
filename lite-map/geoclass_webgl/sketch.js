@@ -153,7 +153,8 @@ function draw() {
 	translate(0, 0, 1);
 	rectMode(CENTER);
 	noFill()
-	stroke(0, 0, 150);
+	stroke(150, 150, 200);
+	// drawingContext.setLineDash([10,5]);
 	let n = Math.pow(2, curZ);
 	rectSize = 2 / n;
 	rect(0, 0, rectSize, rectSize);
