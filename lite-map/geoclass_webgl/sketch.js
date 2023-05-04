@@ -265,8 +265,8 @@ function getImage(z, x, y) {
 	let img = new Image();
 
 	// let choice = Math.floor(random(tileServers.length));
-	// img.src = getWMTS(x, y, z, serverNames[Math.floor(random(serverNames.length))]);
-	img.src = getWMTS(x, y, z, serverNames[0]);
+	img.src = getWMTS(x, y, z, serverNames[Math.floor(random(serverNames.length-2))]);
+	// img.src = getWMTS(x, y, z, serverNames[0]);
 
 	loadImage(img.src, image => {
 		img_tiles.push(new Tile(image, z, x, y));
