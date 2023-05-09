@@ -25,24 +25,26 @@ function getWMTS(x, y, z, serverName = 'osm') {
 }
 
 let serverNames = [
-	'osm',
-	'light',
-	'dark',
-	'voyager',
-	'light_nolabels',
-	'light_only_labels',
-	'dark_nolabels',
-	'dark_only_labels',
-	'voyager_nolabels',
-	'voyager_only_labels',
-	'voyager_labels_under',
-	'toner',
-	'terrain',
-	'watercolor',
-	'yandex_sat',
-	'yandex_traffic',
-	'yandex_gps'
+	{ 'name' : 'osm', 'osm' : true },
+	{ 'name' : 'light', 'light' : false },
+	{ 'name' : 'dark', 'dark' : false },
+	{ 'name' : 'voyager', 'voyager' : false },
+	{ 'name' : 'light_nolabels', 'light_nolabels' : false },
+	{ 'name' : 'light_only_labels', 'light_only_labels' : false },
+	{ 'name' : 'dark_nolabels', 'dark_nolabels' : false },
+	{ 'name' : 'dark_only_labels', 'dark_only_labels' : false },
+	{ 'name' : 'voyager_nolabels', 'voyager_nolabels' : false },
+	{ 'name' : 'voyager_only_labels', 'voyager_only_labels' : false },
+	{ 'name' : 'voyager_labels_under', 'voyager_labels_under' : false },
+	{ 'name' : 'toner', 'toner' : false },
+	{ 'name' : 'terrain', 'terrain' : false },
+	{ 'name' : 'watercolor', 'watercolor' : false },
+	{ 'name' : 'yandex_sat', 'yandex_sat' : false },
+	{ 'name' : 'yandex_traffic', 'yandex_traffic' : false },
+	{ 'name' : 'yandex_gps', 'yandex_gps' : false }
 ];
+
+let useServers = ['osm'];
 
 class Tile {
 	constructor(img, z, x, y) {
@@ -79,6 +81,8 @@ let conf = {
 	drawTileGrid: false,
 }
 
+var gui;
+
 function preload() {
 	myFont = loadFont('./assets/Roboto-Regular.ttf');
 }
@@ -89,6 +93,11 @@ function setup() {
 	// center = new p5.Vector(width / 2, height / 2);
 	center = new p5.Vector(0, 0);
 	pCenter = center.copy();
+	gui = new dat.GUI();
+	let serverController = gui.addFolder('Servers');
+	for(let i = 0; i < serverNames.length; i++) {
+		serverController.add(serverNames[i], serverNames[i].name);
+	}
 }
 
 function draw() {
@@ -125,7 +134,6 @@ function draw() {
 	//Сетка тайлов
 	if(conf.drawTileGrid)
 		drawTileGrid();
-		
 	pop();
 
 
@@ -160,6 +168,7 @@ function draw() {
 	rect(0, 0, rectSize, rectSize);
 	pop();
 	cleanTiles();
+	compileServersList();
 }
 
 function drawTileGrid() {
@@ -197,8 +206,8 @@ function drawGeoGrid() {
 	strokeWeight(1);
 	for (let lon = -180; lon <= 180; lon += 10) {
 		let x1 = G.xFromLonRad(deg2rad(lon));
-		let y1 = G.yFromLatRad(deg2rad(-84.6));
-		let y2 = G.yFromLatRad(deg2rad(84.6));
+		let y1 = G.yFromLatRad(deg2rad(-85.051));
+		let y2 = G.yFromLatRad(deg2rad(85.051));
 		beginShape();
 		vertex(x1, y1);
 		vertex(x1, y2);
@@ -216,6 +225,14 @@ function drawGeoGrid() {
 	pop();
 }
 
+function compileServersList() {
+	useServers = [];
+	serverNames.forEach(server => {
+		// console.log(server);
+		if(server[server.name] === true) useServers.push(server.name);
+	});
+}
+
 function windowResized() {
 	resizeCanvas(windowWidth, windowHeight);
 }
@@ -224,7 +241,7 @@ function mouseDragged() {
 	if (mouseButton === LEFT) {
 		let geo = screenToGeo();
 		// let zoom = Math.floor(random(curZ, curZ + 4));
-		getTile(geoToTiles(geo.x, geo.y, curZ))
+		getTile(geoToTiles(geo.x, geo.y, curZ), useServers[Math.floor(random(useServers.length))]);
 	}
 
 }
@@ -261,11 +278,11 @@ function mouseWheel(event) {
 	currentScale *= event.delta > 0 ? 2 : 0.5;
 }
 
-function getImage(z, x, y) {
+function getImage(z, x, y, serverName = 'osm') {
 	let img = new Image();
 
 	// let choice = Math.floor(random(tileServers.length));
-	img.src = getWMTS(x, y, z, serverNames[Math.floor(random(serverNames.length-2))]);
+	img.src = getWMTS(x, y, z, serverName);
 	// img.src = getWMTS(x, y, z, serverNames[0]);
 
 	loadImage(img.src, image => {
@@ -278,7 +295,7 @@ function sortTiles() {
 	img_tiles.sort(function (a, b) { return a.z - b.z; })
 }
 
-function getTile({ xTile, yTile, zoom }) {
+function getTile({ xTile, yTile, zoom }, serverName = 'osm') {
 	let download = true;
 	for (let i = 0; i < tile_queue.length; i++) {
 		if (tile_queue[i].z == zoom && tile_queue[i].x == xTile && tile_queue[i].y == yTile) {
@@ -288,7 +305,7 @@ function getTile({ xTile, yTile, zoom }) {
 	}
 	if (download) {
 		tile_queue.push(new TileQueue(zoom, xTile, yTile));
-		getImage(zoom, xTile, yTile);
+		getImage(zoom, xTile, yTile, serverName);
 	}
 }
 
@@ -316,5 +333,5 @@ function keyPressed() {
 	else if(key === 't') {
 		conf.drawTileGrid = !conf.drawTileGrid 
 	}
-	console.log(key);
+	// console.log(key);
 }
