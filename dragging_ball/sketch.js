@@ -1,18 +1,29 @@
 class Feature {
-	constructor(r, pos, danger) {
+	constructor(r, pos, danger, name) {
 		this.pos = pos;
 		this.r = r;
 		this.danger = danger;
 		this.active = false;
+		this.name = name;
 	}
 
 	draw() {
 		noStroke();
-		if(this.pos.y + this.r >= settings.border)
+		let c1 = pg.pixels[(width * (this.pos.y + this.r) + this.pos.x) * 4 + 0];
+		let c2 = pg.pixels[(width * (this.pos.y + this.r) + this.pos.x) * 4 + 1];
+		let c3 = pg.pixels[(width * (this.pos.y + this.r) + this.pos.x) * 4 + 2];
+		let c4 = pg.pixels[(width * (this.pos.y + this.r) + this.pos.x) * 4 + 3];
+		if (c1 === 0 && c2 === 0 && c3 === 0 && c4 === 255)
 			fill(225, 118, 118);
 		else
-			fill(30,137,137);
+			fill(30, 137, 137);
 		circle(this.pos.x, this.pos.y, this.r * 2)
+
+		fill(255);
+		let ts = this.r/3;
+		textSize(ts);
+		textAlign(CENTER);
+		text(this.name, this.pos.x, this.pos.y+ts/2);
 	}
 
 	ptInside(pt) {
@@ -21,11 +32,20 @@ class Feature {
 	}
 
 	setPos(pos) {
-		this.pos.set(pos);
+		// image.loadPixels();
 		if (this.danger) {
-			if (pos.y - this.r <= settings.border) {
-				this.pos.set(pos.x, settings.border+this.r);
+			let c1 = pg.pixels[(width * (pos.y - this.r) + pos.x) * 4 + 0];
+			let c2 = pg.pixels[(width * (pos.y - this.r) + pos.x) * 4 + 1];
+			let c3 = pg.pixels[(width * (pos.y - this.r) + pos.x) * 4 + 2];
+			let c4 = pg.pixels[(width * (pos.y - this.r) + pos.x) * 4 + 3];
+			// console.log(c1, c2, c3, c4);
+			if (c1 === 0 && c2 === 0 && c3 === 0 && c4 === 255) {
+				// console.log(c.value);
+				// this.pos.set(pos.x, this.pos.y);
+				this.pos.set(pos);
 			}
+		} else {
+			this.pos.set(pos);
 		}
 	}
 }
@@ -33,16 +53,25 @@ class Feature {
 var gui;
 
 let settings = {
-	border : 700,
+	border: 400,
 };
 
 let features = [];
+let field;
+let pg;
+
+function preload() {
+	field = loadImage('img/field.png');
+}
 // Настройка приложения
 // Данная функция будет выполнена первой и только один раз
 function setup() {
 	createCanvas(windowWidth, windowHeight);
-	features.push(new Feature(90, new p5.Vector(800 / 2, height - 200), true));
-	features.push(new Feature(90, new p5.Vector(200, height - 200), false));
+	pg = createGraphics(windowWidth, windowHeight);
+	pg.image(field, 0, 0, image.width, image.height);
+	pg.loadPixels();
+	features.push(new Feature(90, new p5.Vector(800 / 2, height - 200), true, "The Bad"));
+	features.push(new Feature(90, new p5.Vector(200, height - 200), false, "The Good"));
 	gui = new dat.GUI();
 	gui.add(settings, 'border', 0, height, 10);
 }
@@ -50,7 +79,9 @@ function setup() {
 // Основная функция отрисовки
 // Выполняется 60 раз в секунду (как правило)
 function draw() {
+	// pg.loadPixels();
 	background(100);
+	image(field, 0, 0, image.width, image.height);
 
 	features.forEach(feature => {
 		feature.draw();
