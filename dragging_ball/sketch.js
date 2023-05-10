@@ -21,12 +21,11 @@ class Feature {
 	}
 
 	setPos(pos) {
+		this.pos.set(pos);
 		if (this.danger) {
-			if (pos.y - this.r >= settings.border) {
-				this.pos.set(pos);
+			if (pos.y - this.r <= settings.border) {
+				this.pos.set(pos.x, settings.border+this.r);
 			}
-		} else {
-			this.pos.set(pos);
 		}
 	}
 }
