@@ -53,8 +53,8 @@ class Vehicle {
 	}
 
 	seek(target) {
-		let desired = target.copy().sub(this.pos); //follows
-		// let desired = this.pos.copy().sub(target); //escapes
+		// let desired = target.copy().sub(this.pos); //follows
+		let desired = this.pos.copy().sub(target); //escapes
 
 		let d = desired.mag();
 		desired.normalize();
