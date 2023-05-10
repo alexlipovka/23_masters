@@ -8,7 +8,7 @@ class Feature {
 
 	draw() {
 		noStroke();
-		if(this.pos.y + this.r >= border)
+		if(this.pos.y + this.r >= settings.border)
 			fill(225, 118, 118);
 		else
 			fill(30,137,137);
@@ -22,7 +22,7 @@ class Feature {
 
 	setPos(pos) {
 		if (this.danger) {
-			if (pos.y - this.r >= border) {
+			if (pos.y - this.r >= settings.border) {
 				this.pos.set(pos);
 			}
 		} else {
@@ -31,14 +31,21 @@ class Feature {
 	}
 }
 
-border = 700;
-features = [];
+var gui;
+
+let settings = {
+	border : 700,
+};
+
+let features = [];
 // Настройка приложения
 // Данная функция будет выполнена первой и только один раз
 function setup() {
 	createCanvas(windowWidth, windowHeight);
 	features.push(new Feature(90, new p5.Vector(800 / 2, height - 200), true));
 	features.push(new Feature(90, new p5.Vector(200, height - 200), false));
+	gui = new dat.GUI();
+	gui.add(settings, 'border', 0, height, 10);
 }
 
 // Основная функция отрисовки
@@ -50,7 +57,7 @@ function draw() {
 		feature.draw();
 	});
 	stroke(0);
-	line(0, border, width, border);
+	line(0, settings.border, width, settings.border);
 	noStroke();
 	fill(255);
 	ellipse(mouseX, mouseY, 21, 21);
