@@ -15,7 +15,7 @@ function s2w(pt) {
 }
 
 let ants = [];
-let cellSize = 20;
+let cellSize = 50;
 let gridSize = 10;
 let grid;
 let steps = [];
@@ -46,10 +46,10 @@ function setup () {
 }
 
 function pushStep(x, y) {
+	let colorShift = 5;
 	for(let i = 0; i < steps.length; i++) {
 		if(steps[i].x === x && steps[i].y === y) {
 				let c = steps[i].color;
-				let colorShift = 5;
 				let red = constrain(c.levels[0] + colorShift, 0, 255)
 				let green = constrain(c.levels[1] + colorShift, 0, 255)
 				let blue = constrain(c.levels[2] + colorShift, 0, 255)
@@ -58,7 +58,7 @@ function pushStep(x, y) {
 				return;
 		}
 	}
-	steps.push({'x': x, 'y': y, 'color': color(0, 0, 0, 255)});
+	steps.push({'x': x, 'y': y, 'color': color(colorShift, colorShift, colorShift, 255)});
 	// console.log(steps);
 }
 
@@ -78,7 +78,7 @@ function fadeSteps() {
 // Выполняется 60 раз в секунду (как правило)
 function draw () {
 	background(100);
-	if(frameCount%10 === 0)
+	if(frameCount%100 === 0)
 		fadeSteps();
 
 	fill(50);
@@ -116,6 +116,7 @@ function draw () {
 		for(let i = 0; i < steps.length; i++) {
 			fill(steps[i].color);
 			rect(steps[i].x, steps[i].y, cellSize, cellSize);
+			// circle(steps[i].x, steps[i].y, cellSize, cellSize);
 		}
 
 		
@@ -132,7 +133,7 @@ function draw () {
 	let wpt = s2w(createVector(mouseX, mouseY));
 	textFont(myFont);
 	textSize(14);
-	text(`(${round(wpt.x, 1)}; ${round(wpt.y, 1)})`, mouseX, mouseY);
+	text(`(${round(wpt.x, 1)}; ${round(wpt.y, 1)})\n   ${steps.length}`, mouseX, mouseY);
 }
 
 // Вспомогательная функция, которая реагирует на изменения размера
@@ -145,7 +146,7 @@ function mousePressed() {
 		view.isDragging = true;
 		view.pCenter.set(mouseX, mouseY);
 	} else if(mouseButton === LEFT) {
-		ants.push(new Ant(s2w(createVector(mouseX, mouseY))));
+		ants.push(new Ant(s2w(createVector(mouseX, mouseY)), steps));
 	}
 
 }

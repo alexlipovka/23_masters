@@ -8,7 +8,7 @@ const STATES = {
 // let noiseScale = 0.02;
 
 class Ant {
-	constructor(pos) {
+	constructor(pos, world) {
 		this.pos = pos;
 		this.vel = new p5.Vector(0, 0);
 		this.acc = new p5.Vector(1, 0);
@@ -22,8 +22,13 @@ class Ant {
 		this.steps = 0;
 		this.targets = [];
 		this.targets.push(this.home);
-		this.noiseScale = 0.02;
-		this.noiseVal = 0;
+		this.noiseScale = 0.01;
+		this.noiseVal = random()*1000;
+		this.curTarget = new p5.Vector(0,0);
+		this.leftTarget = new p5.Vector(0,0);
+		this.centerTarget = new p5.Vector(0,0);
+		this.rightTarget = new p5.Vector(0,0);
+		this.world = world;
 	}
 
 	run() {
@@ -51,10 +56,24 @@ class Ant {
 		translate(this.pos.x, this.pos.y);
 		{
 			fill(0);
+			let m = this.vel.mag();
 			let fPos = this.vel.copy().mult(10);
 			circle(fPos.x, fPos.y, 4);
+			fPos = this.vel.copy().normalize().rotate(PI / 4).mult(m * 10);
+			circle(fPos.x, fPos.y, 4);
+			fPos = this.vel.copy().normalize().rotate(-PI / 4).mult(m * 10);
+			circle(fPos.x, fPos.y, 4);
+
 		}
 		pop();
+
+		noStroke();
+		fill(255, 0, 0);
+		circle(this.curTarget.x, this.curTarget.y, 4);
+		fill(0, 255, 0);
+		circle(this.leftTarget.x, this.leftTarget.y, 4);
+		circle(this.centerTarget.x, this.centerTarget.y, 4);
+		circle(this.rightTarget.x, this.rightTarget.y, 4);
 
 		fill(0, 255, 0);
 		noStroke();
@@ -81,31 +100,70 @@ class Ant {
 	chooseRandomDir() {
 		// let randomDir = this.vel.copy().normalize().setHeading(random(PI/2) - PI/4);
 		// console.log(noise(this.noiseVal) * PI/4 - PI/8);
-		let randomDir = this.vel.copy().normalize().setHeading(noise(this.noiseVal) * PI - PI/2);
-		return randomDir.add(this.vel);
+		let m = this.vel.mag();
+		let randomDir = this.vel.copy().normalize().rotate(noise(this.noiseVal) * PI / 2 - PI/4).mult(50).add(this.pos);
+		this.curTarget.set(randomDir);
+		return randomDir;//.add(this.vel);
+	}
+
+	chooseSensor() {
+		this.leftTarget = this.vel.copy().normalize().rotate(-PI/4).mult(200).add(this.pos);
+		this.centerTarget = this.vel.copy().normalize().rotate(0).mult(200).add(this.pos);
+		this.rightTarget = this.vel.copy().normalize().rotate(PI/4).mult(200).add(this.pos);
+
+		let leftX = round(this.leftTarget.x / cellSize)*cellSize;
+		let leftY = round(this.leftTarget.y / cellSize)*cellSize;
+		let centerX = round(this.centerTarget.x / cellSize)*cellSize;
+		let centerY = round(this.centerTarget.y / cellSize)*cellSize;
+		let rightX = round(this.rightTarget.x / cellSize)*cellSize;
+		let rightY = round(this.rightTarget.y / cellSize)*cellSize;
+
+		const leftSensor = this.world.find(w => w.x === leftX && w.y === leftY);
+		const centerSensor = this.world.find(w => w.x === centerX && w.y === centerY);
+		const rightSensor = this.world.find(w => w.x === rightX && w.y === rightY);
+		let v1 = leftSensor !== undefined ? leftSensor.color.levels[0] : 0;
+		let v2 = centerSensor !== undefined ? centerSensor.color.levels[0] : 0;
+		let v3 = rightSensor !== undefined ? rightSensor.color.levels[0] : 0;
+		return v1 > v2 ? leftSensor : v2 > v3 ? centerSensor : rightSensor;
 	}
 
 	defineTarget(target) {
-		if(random() < 0.4) 
+		let t = 0.5;
+		if (random() < t)
 			return this.chooseRandomDir();
 		if (this.steps < WAIT)
+			// return this.chooseRandomDir().mult(t).add(target.copy().mult(1-t));
 			return target;
 		if (this.state === STATES.SEEK)
+			// return this.chooseRandomDir().mult(t).add(target.copy().mult(1-t));
 			return target;
 		if (this.state === STATES.HOME)
+			// return this.chooseRandomDir().mult(t).add(this.home.copy().mult(1-t));
 			return this.home;
 	}
 
 	checkTarget(target) {
-		if (this.pos.copy().sub(target).magSq() < 100) {
+		if (this.pos.copy().sub(target).magSq() < 400) {
 			this.state++;
 			this.state = this.state % 2;
 		}
 	}
 
+	combineTargets(target1, target2, val) {
+		return target1.copy().mult(val).add(target2.copy().mult(1-val));
+	}
+
 	seek(target) {
-		let trueTarget = this.defineTarget(target);
-		this.checkTarget(trueTarget);
+		let sensor = this.chooseSensor();
+		// let trueTarget = this.defineTarget(target);
+		
+		let trueTarget = this.chooseRandomDir();
+		if(sensor !== undefined)
+			trueTarget = this.combineTargets(createVector(sensor.x, sensor.y), trueTarget, 0.8);
+		// this.checkTarget(trueTarget);
+		this.checkTarget(target);
+		// if(this.state === STATES.HOME)
+		// 	trueTarget = this.home.copy();
 		let desired;
 		desired = trueTarget.copy().sub(this.pos);
 
