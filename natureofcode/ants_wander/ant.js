@@ -81,7 +81,7 @@ class Ant {
 	chooseRandomDir() {
 		// let randomDir = this.vel.copy().normalize().setHeading(random(PI/2) - PI/4);
 		// console.log(noise(this.noiseVal) * PI/4 - PI/8);
-		let randomDir = this.vel.copy().normalize().setHeading(noise(this.noiseVal) * PI/2 - PI/4);
+		let randomDir = this.vel.copy().normalize().setHeading(noise(this.noiseVal) * PI - PI/2);
 		return randomDir.add(this.vel);
 	}
 
