@@ -5,10 +5,13 @@ let view =  {
 	isDragging: false,
 }
 
+let ants = [];
+
 function s2w(pt) {
 	let wPt = pt.copy();
 	wPt.sub(view.center);
 	wPt.mult(1/view.currentScale);
+	// console.log(wPt);
 	return wPt;
 }
 
@@ -48,6 +51,12 @@ function draw () {
 		line(-200, 0, 200, 0);
 		line(0, -200, 0, 200);
 	}
+
+	ants.forEach(ant => {
+		ant.seek(s2w(createVector(mouseX, mouseY)));
+		ant.run();
+	});
+
 	pop();
 
 	fill(200);
@@ -66,6 +75,8 @@ function mousePressed() {
 	if (mouseButton === CENTER) {
 		view.isDragging = true;
 		view.pCenter.set(mouseX, mouseY);
+	} else if(mouseButton === LEFT) {
+		ants.push(new Ant(s2w(createVector(mouseX, mouseY))));
 	}
 
 }
