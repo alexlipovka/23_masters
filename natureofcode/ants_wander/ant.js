@@ -5,21 +5,25 @@ const STATES = {
 	'SEEK': 1,
 }
 
+// let noiseScale = 0.02;
+
 class Ant {
 	constructor(pos) {
 		this.pos = pos;
 		this.vel = new p5.Vector(0, 0);
 		this.acc = new p5.Vector(1, 0);
 		this.maxSpeed = MAXSPEED;
-		this.maxForce = 5;
+		this.maxForce = 3;
 		this.mass = 10;
 		this.home = this.pos.copy();
 
 		this.state = STATES.SEEK,
-		this.reachedGoal = false;
+			this.reachedGoal = false;
 		this.steps = 0;
 		this.targets = [];
 		this.targets.push(this.home);
+		this.noiseScale = 0.02;
+		this.noiseVal = 0;
 	}
 
 	run() {
@@ -41,6 +45,16 @@ class Ant {
 			endShape(CLOSE);
 		}
 		pop();
+
+		push();
+		translate(this.pos.x, this.pos.y);
+		{
+			fill(0);
+			let fPos = this.vel.copy().mult(10);
+			circle(fPos.x, fPos.y, 4);
+		}
+		pop();
+
 		fill(0, 255, 0);
 		noStroke();
 		circle(this.home.x, this.home.y, 5);
@@ -48,6 +62,7 @@ class Ant {
 
 	update() {
 		this.steps++;
+		this.noiseVal += this.noiseScale;
 
 		this.vel.add(this.acc);
 		this.vel.limit(this.maxSpeed);
@@ -62,7 +77,16 @@ class Ant {
 		this.acc.add(f);
 	}
 
+	chooseRandomDir() {
+		// let randomDir = this.vel.copy().normalize().setHeading(random(PI/2) - PI/4);
+		// console.log(noise(this.noiseVal) * PI/4 - PI/8);
+		let randomDir = this.vel.copy().normalize().setHeading(noise(this.noiseVal) * PI/2 - PI/4);
+		return randomDir.add(this.vel);
+	}
+
 	defineTarget(target) {
+		if(random() < 0.4) 
+			return this.chooseRandomDir();
 		if (this.steps < WAIT)
 			return target;
 		if (this.state === STATES.SEEK)
