@@ -33,7 +33,8 @@ class Ant {
 
 	draw() {
 		fill(map(this.vel.mag(), 0, MAXSPEED, 0, 255), 0, 0);
-		this.reachedGoal ? stroke(0, 255, 0) : noStroke();
+		stroke(255);
+		// this.reachedGoal ? stroke(0, 255, 0) : noStroke();
 		push();
 		{
 			translate(this.pos.x, this.pos.y);
