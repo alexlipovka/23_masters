@@ -1,3 +1,21 @@
+var gui;
+let conf = {
+	use_separation : true,
+	use_alignment : true,
+	use_cohesion : true,
+	track_steps : true,
+	obey_limits : true,
+	go_random : true,
+	val_separation : 0.5,
+	val_alignment : 0.5,
+	val_cohesion : 0.5,
+	val_steps : 2.0,
+	val_limits : 2.0,
+	val_random : 1.0
+}
+
+
+
 let view = {
 	center: new p5.Vector(0, 0),
 	pCenter: new p5.Vector(0, 0),
@@ -44,6 +62,20 @@ function setup() {
 	}
 	grid.updatePixels();
 	smooth();
+
+	gui = new dat.GUI();
+	gui.add(conf, 'use_separation');
+	gui.add(conf, 'val_separation', 0, 5);
+	gui.add(conf, 'use_alignment');
+	gui.add(conf, 'val_alignment', 0, 5);
+	gui.add(conf, 'use_cohesion');
+	gui.add(conf, 'val_cohesion', 0, 5);
+	gui.add(conf, 'track_steps');
+	gui.add(conf, 'val_steps', 0, 5);
+	gui.add(conf, 'obey_limits');
+	gui.add(conf, 'val_limits', 0, 5);
+	gui.add(conf, 'go_random');
+	gui.add(conf, 'val_random', 0, 5);
 }
 
 function pushStep(x, y) {

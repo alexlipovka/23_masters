@@ -1,5 +1,5 @@
 const WAIT = 50;
-const MAXSPEED = 15;
+const MAXSPEED = 5;
 const STATES = {
 	'HOME': 0,
 	'SEEK': 1,
@@ -56,11 +56,12 @@ class Ant {
 		stroke(100);
 		circle(0, 0, this.desiredSeparation);
 
-		pop();
-
 		noStroke();
 		fill(255, 0, 0);
 		circle(this.curTarget.x, this.curTarget.y, 4);
+
+		pop();
+
 		fill(0, 255, 0);
 		circle(this.leftTarget.x, this.leftTarget.y, 4);
 		circle(this.centerTarget.x, this.centerTarget.y, 4);
@@ -93,8 +94,15 @@ class Ant {
 	chooseRandomDir() {
 		// let randomDir = this.vel.copy().normalize().setHeading(random(PI/2) - PI/4);
 		// console.log(noise(this.noiseVal) * PI/4 - PI/8);
-		let m = this.vel.mag();
-		let randomDir = this.vel.copy().normalize().rotate(noise(this.noiseVal) * PI / 2 - PI / 4).mult(50).add(this.pos);
+		let randomDir;
+		if(this.vel.mag() > 0) {
+			randomDir = this.vel.copy().normalize().rotate(noise(this.noiseVal) * PI / 2 - PI / 4).setMag(this.maxSpeed);
+			// console.log(randomDir);
+		} else {
+			randomDir = createVector(1, 0).normalize().setHeading(random(PI*2) - PI).normalize();
+			// console.log(`from scratch`);
+		}
+		// randomDir.add(this.pos);
 		this.curTarget.set(randomDir);
 		return randomDir;//.add(this.vel);
 	}
@@ -118,6 +126,9 @@ class Ant {
 		let v1 = leftSensor !== undefined ? leftSensor.color.levels[0] : 0;
 		let v2 = centerSensor !== undefined ? centerSensor.color.levels[0] : 0;
 		let v3 = rightSensor !== undefined ? rightSensor.color.levels[0] : 0;
+		if(v1 === 0 && v2 === 0 && v3 === 0)
+			return undefined;
+
 		return v1 > v2 ? leftSensor : v2 > v3 ? centerSensor : rightSensor;
 	}
 
@@ -149,12 +160,15 @@ class Ant {
 
 	trackSteps() {
 		let sensor = this.chooseSensor();
-		// let trueTarget = this.defineTarget(target);
+		if(sensor === undefined)
+			return new p5.Vector(0, 0);
+		let trueTarget = new p5.Vector(sensor.x, sensor.y);
 
-		let trueTarget = this.chooseRandomDir();
-		if (sensor !== undefined)
-			trueTarget = this.combineTargets(createVector(sensor.x, sensor.y), trueTarget, 0.6);
-		// this.checkTarget(trueTarget);
+		// let trueTarget = this.chooseRandomDir();
+		// if (sensor !== undefined)
+		// 	trueTarget = this.combineTargets(createVector(sensor.x, sensor.y), trueTarget, 0.6);
+		
+			// this.checkTarget(trueTarget);
 		// this.checkTarget(target);
 		// if(this.state === STATES.HOME)
 		// 	trueTarget = this.home.copy();
@@ -185,18 +199,22 @@ class Ant {
 		let coh = this.cohesion(others);
 		let step = this.trackSteps();
 		let lim = this.limits();
+		let rnd = this.chooseRandomDir();
 
 		sep.mult(0.5);
 		ali.mult(0.5);
 		coh.mult(0.5);
 		step.mult(2.0);
 		lim.mult(2.0);
+		rnd.mult(1.0);
 
-		this.applyForce(sep);
-		this.applyForce(ali);
-		this.applyForce(coh);
-		this.applyForce(step);
-		this.applyForce(lim);
+		
+		if(conf.use_separation) this.applyForce(sep);
+		if(conf.use_alignment) this.applyForce(ali);
+		if(conf.use_cohesion) this.applyForce(coh);
+		if(conf.track_steps) this.applyForce(step);
+		if(conf.obey_limits) this.applyForce(lim);
+		if(conf.go_random) this.applyForce(rnd);
 	}
 
 	limits() {
