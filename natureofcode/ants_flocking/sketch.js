@@ -33,11 +33,15 @@ function s2w(pt) {
 }
 
 let ants = [];
+let food = [];
 let cellSize = 50;
 let gridSize = 10;
 let grid;
 let steps = [];
 let stepExtent = [new p5.Vector(0, 0), new p5.Vector(0, 0)];
+
+let walls = [[new p5.Vector(-500, -500), new p5.Vector(-500, 500)],
+						[new p5.Vector(500, -500), new p5.Vector(500, 500)]];
 
 
 function preload() {
@@ -78,20 +82,20 @@ function setup() {
 	gui.add(conf, 'val_random', 0, 5);
 }
 
-function pushStep(x, y) {
+function pushStep(x, y, pushColor) {
 	let colorShift = 5;
 	for (let i = 0; i < steps.length; i++) {
 		if (steps[i].x === x && steps[i].y === y) {
 			let c = steps[i].color;
-			let red = constrain(c.levels[0] + colorShift, 0, 255)
-			let green = constrain(c.levels[1] + colorShift, 0, 255)
-			let blue = constrain(c.levels[2] + colorShift, 0, 255)
+			let red = constrain(c.levels[0] + pushColor.levels[0], 0, 255)
+			let green = constrain(c.levels[1] + pushColor.levels[1], 0, 255)
+			let blue = constrain(c.levels[2] + pushColor.levels[2], 0, 255)
 			let alpha = constrain(c.levels[3], 0, 255)
 			steps[i].color = color(red, green, blue, alpha);
 			return;
 		}
 	}
-	steps.push({ 'x': x, 'y': y, 'color': color(colorShift, colorShift, colorShift, 255) });
+	steps.push({ 'x': x, 'y': y, 'color': color(pushColor.levels[0], pushColor.levels[1], pushColor.levels[2], 255) });
 	stepExtent[0].x = min(x - cellSize / 2, stepExtent[0].x);
 	stepExtent[0].y = min(y - cellSize / 2, stepExtent[0].y);
 	stepExtent[1].x = max(x + cellSize / 2, stepExtent[1].x);
@@ -143,7 +147,10 @@ function draw() {
 		for (let a = 0; a < ants.length; a++) {
 			let x = round(ants[a].pos.x / cellSize) * cellSize;
 			let y = round(ants[a].pos.y / cellSize) * cellSize;
-			pushStep(x, y);
+			if(ants[a].state === STATES.SEEK)
+				pushStep(x, y, color(0, 5, 0, 255));
+			else if(ants[a].state === STATES.HOME)
+				pushStep(x, y, color(0, 0, 15, 255));
 
 		}
 
@@ -161,18 +168,29 @@ function draw() {
 	}
 
 	ants.forEach(ant => {
+		ant.look(walls);
+		ant.foundFood(food);
+		ant.reachedHome();
 		ant.applyFlockBehaviour(ants);
 		// ant.seek(s2w(createVector(mouseX, mouseY)));
 		ant.run();
 	});
+
+	for(let i = 0; i < food.length; i++) {
+		food[i].draw();
+	}
+
 
 	stroke(255);
 	noFill();
 	rectMode(CORNERS);
 	rect(stepExtent[0].x, stepExtent[0].y, stepExtent[1].x, stepExtent[1].y);
 
+	drawWalls();
+
 	pop();
 
+	
 	fill(200);
 	let wpt = s2w(createVector(mouseX, mouseY));
 	textFont(myFont);
@@ -188,6 +206,14 @@ function draw() {
 	}
 }
 
+function drawWalls() {
+	stroke(255);
+	for(let i = 0; i < walls.length; i++) {
+		line(walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y);
+	}
+
+}
+
 // Вспомогательная функция, которая реагирует на изменения размера
 function windowResized() {
 	resizeCanvas(windowWidth, windowHeight, WEBGL);
@@ -197,8 +223,11 @@ function mousePressed() {
 	if (mouseButton === CENTER) {
 		view.isDragging = true;
 		view.pCenter.set(mouseX, mouseY);
-	} else if (mouseButton === LEFT) {
+	} else if (mouseButton === LEFT && keyIsPressed === false) {
 		ants.push(new Ant(s2w(createVector(mouseX, mouseY)), steps));
+	} else if(mouseButton === LEFT && keyCode === CONTROL) {
+		food.push(new Food(s2w(createVector(mouseX, mouseY)), 300));
+		console.log('food add');
 	}
 
 }
