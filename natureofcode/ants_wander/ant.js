@@ -10,7 +10,7 @@ const STATES = {
 class Ant {
 	constructor(pos, world) {
 		this.pos = pos;
-		this.vel = new p5.Vector(0, 0);
+		this.vel = new p5.Vector(random(2)-1, random(2)-1);
 		this.acc = new p5.Vector(1, 0);
 		this.maxSpeed = MAXSPEED;
 		this.maxForce = 3;
@@ -51,22 +51,7 @@ class Ant {
 			endShape(CLOSE);
 		}
 		pop();
-
-		push();
-		translate(this.pos.x, this.pos.y);
-		{
-			fill(0);
-			let m = this.vel.mag();
-			let fPos = this.vel.copy().mult(10);
-			circle(fPos.x, fPos.y, 4);
-			fPos = this.vel.copy().normalize().rotate(PI / 4).mult(m * 10);
-			circle(fPos.x, fPos.y, 4);
-			fPos = this.vel.copy().normalize().rotate(-PI / 4).mult(m * 10);
-			circle(fPos.x, fPos.y, 4);
-
-		}
-		pop();
-
+		
 		noStroke();
 		fill(255, 0, 0);
 		circle(this.curTarget.x, this.curTarget.y, 4);
@@ -75,7 +60,7 @@ class Ant {
 		circle(this.centerTarget.x, this.centerTarget.y, 4);
 		circle(this.rightTarget.x, this.rightTarget.y, 4);
 
-		fill(0, 255, 0);
+		fill(0, 0, 255);
 		noStroke();
 		circle(this.home.x, this.home.y, 5);
 	}
@@ -107,9 +92,10 @@ class Ant {
 	}
 
 	chooseSensor() {
-		this.leftTarget = this.vel.copy().normalize().rotate(-PI/4).mult(200).add(this.pos);
-		this.centerTarget = this.vel.copy().normalize().rotate(0).mult(200).add(this.pos);
-		this.rightTarget = this.vel.copy().normalize().rotate(PI/4).mult(200).add(this.pos);
+		let sensorDist = 100;
+		this.leftTarget = this.vel.copy().normalize().rotate(-PI/4).mult(sensorDist).add(this.pos);
+		this.centerTarget = this.vel.copy().normalize().rotate(0).mult(sensorDist).add(this.pos);
+		this.rightTarget = this.vel.copy().normalize().rotate(PI/4).mult(sensorDist).add(this.pos);
 
 		let leftX = round(this.leftTarget.x / cellSize)*cellSize;
 		let leftY = round(this.leftTarget.y / cellSize)*cellSize;
@@ -159,7 +145,7 @@ class Ant {
 		
 		let trueTarget = this.chooseRandomDir();
 		if(sensor !== undefined)
-			trueTarget = this.combineTargets(createVector(sensor.x, sensor.y), trueTarget, 0.8);
+			trueTarget = this.combineTargets(createVector(sensor.x, sensor.y), trueTarget, 0.7);
 		// this.checkTarget(trueTarget);
 		this.checkTarget(target);
 		// if(this.state === STATES.HOME)
