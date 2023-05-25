@@ -120,8 +120,9 @@ function draw() {
 		noStroke();
 		for (let i = 0; i < steps.length; i++) {
 			fill(steps[i].color);
-			rect(steps[i].x, steps[i].y, cellSize, cellSize);
-			// circle(steps[i].x, steps[i].y, cellSize, cellSize);
+			// rect(steps[i].x, steps[i].y, cellSize, cellSize);
+			let v = steps[i].color.levels[0];
+			circle(steps[i].x, steps[i].y, map(v, 0, 255, cellSize/2, cellSize*2));
 		}
 
 
