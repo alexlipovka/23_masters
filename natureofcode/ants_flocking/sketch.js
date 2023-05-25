@@ -41,7 +41,9 @@ let steps = [];
 let stepExtent = [new p5.Vector(0, 0), new p5.Vector(0, 0)];
 
 let walls = [[new p5.Vector(-500, -500), new p5.Vector(-500, 500)],
-						[new p5.Vector(500, -500), new p5.Vector(500, 500)]];
+						[new p5.Vector(500, -500), new p5.Vector(500, 500)],
+						[new p5.Vector(-2000, -2000), new p5.Vector(-2000, 2000)],
+						[new p5.Vector(2000, -2000), new p5.Vector(2000, 2000)]];
 
 
 function preload() {
@@ -207,7 +209,7 @@ function draw() {
 }
 
 function drawWalls() {
-	stroke(255);
+	stroke(80);
 	for(let i = 0; i < walls.length; i++) {
 		line(walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y);
 	}

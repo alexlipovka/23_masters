@@ -31,7 +31,7 @@ class Ant {
 		this.world = world;
 		this.desiredSeparation = 400;
 		this.rays = [];
-		for (let a = 0; a < 360; a += 1) {
+		for (let a = 0; a < 360; a += 10) {
 			this.rays.push(new Ray(this.pos, radians(a)));
 		}
 	}
@@ -242,8 +242,8 @@ class Ant {
 			if (this.pos.x > extent) desired.add(new p5.Vector(-this.maxSpeed, this.vel.y));
 			if (this.pos.y < -extent) desired.add(new p5.Vector(this.vel.x, this.maxSpeed));
 			if (this.pos.y > -extent) desired.add(new p5.Vector(this.vel.x, -this.maxSpeed));
-			console.log(this.pos);
-			console.log(desired);
+			// console.log(this.pos);
+			// console.log(desired);
 		}
 
 
@@ -309,7 +309,7 @@ class Ant {
 			steer.limit(this.maxForce);
 			// this.applyForce(steer);
 			return (steer);
-			console.log(`Force applied ${steer}`);
+			// console.log(`Force applied ${steer}`);
 		}
 		else
 			return sum;
