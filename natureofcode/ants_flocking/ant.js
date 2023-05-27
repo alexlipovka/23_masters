@@ -1,5 +1,5 @@
 const WAIT = 50;
-const MAXSPEED = 25;
+const MAXSPEED = 15;
 const STATES = {
 	'HOME': 0,
 	'SEEK': 1,
@@ -8,12 +8,12 @@ const STATES = {
 // let noiseScale = 0.02;
 
 class Ant {
-	constructor(pos, world) {
+	constructor(pos, world, home) {
 		this.pos = pos;
 		this.vel = new p5.Vector(random(2) - 1, random(2) - 1);
 		this.acc = new p5.Vector(1, 0);
-		this.maxSpeed = random(MAXSPEED / 4, MAXSPEED);
-		this.maxForce = 3;
+		this.maxSpeed = MAXSPEED;
+		this.maxForce = 30;
 		this.mass = 10;
 		this.home = this.pos.copy();
 
@@ -30,10 +30,10 @@ class Ant {
 		this.rightTarget = new p5.Vector(0, 0);
 		this.world = world;
 		this.desiredSeparation = 400;
-		this.rays = [];
-		for (let a = 0; a < 360; a += 10) {
-			this.rays.push(new Ray(this.pos, radians(a)));
-		}
+		// this.rays = [];
+		// for (let a = 0; a < 360; a += 10) {
+		// 	this.rays.push(new Ray(this.pos, radians(a)));
+		// }
 	}
 
 	run() {
@@ -42,8 +42,13 @@ class Ant {
 	}
 
 	draw() {
-		fill(map(this.vel.mag(), 0, MAXSPEED, 0, 255), 0, 0);
+		// fill(map(this.vel.mag(), 0, MAXSPEED, 0, 255), 0, 0);
 		stroke(255);
+		if (this.state === STATES.SEEK) {
+			fill(0, 255, 0);
+		} else {
+			fill(0, 0, 255);
+		}
 		// this.reachedGoal ? stroke(0, 255, 0) : noStroke();
 		push();
 		{
@@ -100,7 +105,8 @@ class Ant {
 		// console.log(noise(this.noiseVal) * PI/4 - PI/8);
 		let randomDir;
 		if (this.vel.mag() > 0) {
-			randomDir = this.vel.copy().normalize().rotate(noise(this.noiseVal) * PI / 2 - PI / 4).setMag(this.maxSpeed);
+			// randomDir = this.vel.copy().normalize().rotate(noise(this.noiseVal) * PI / 4 - PI / 8).setMag(this.maxSpeed);
+			randomDir = this.vel.copy().normalize().rotate(random(PI / 4) - PI / 8).setMag(this.maxSpeed);
 			// console.log(randomDir);
 		} else {
 			randomDir = createVector(1, 0).normalize().setHeading(random(PI * 2) - PI).normalize();
@@ -112,7 +118,7 @@ class Ant {
 	}
 
 	chooseSensor() {
-		let sensorDist = 100;
+		let sensorDist = 150;
 		this.leftTarget = this.vel.copy().normalize().rotate(-PI / 4).mult(sensorDist).add(this.pos);
 		this.centerTarget = this.vel.copy().normalize().rotate(0).mult(sensorDist).add(this.pos);
 		this.rightTarget = this.vel.copy().normalize().rotate(PI / 4).mult(sensorDist).add(this.pos);
@@ -127,17 +133,22 @@ class Ant {
 		const leftSensor = this.world.find(w => w.x === leftX && w.y === leftY);
 		const centerSensor = this.world.find(w => w.x === centerX && w.y === centerY);
 		const rightSensor = this.world.find(w => w.x === rightX && w.y === rightY);
-		let c1 = leftSensor !== undefined ? leftSensor.color.levels[2] : 0;
-		let c2 = centerSensor !== undefined ? centerSensor.color.levels[2] : 0;
-		let c3 = rightSensor !== undefined ? rightSensor.color.levels[2] : 0;
-		let v1 = leftSensor !== undefined ? leftSensor.color.levels[0] : 0;
-		let v2 = centerSensor !== undefined ? centerSensor.color.levels[0] : 0;
-		let v3 = rightSensor !== undefined ? rightSensor.color.levels[0] : 0;
-		if (v1 === 0 && v2 === 0 && v3 === 0 && c1 === 0 && c2 === 0 && c3 === 0)
+		let v1 = 0;
+		let v2 = 0;
+		let v3 = 0;
+		if (this.state === STATES.SEEK) {
+			console.log('Seeking');
+			v1 = leftSensor !== undefined ? leftSensor.color.levels[2] : 0;
+			v2 = centerSensor !== undefined ? centerSensor.color.levels[2] : 0;
+			v3 = rightSensor !== undefined ? rightSensor.color.levels[2] : 0;
+		} else {//if(this.state === STATES.HOME)
+			console.log('Going home');
+			v1 = leftSensor !== undefined ? leftSensor.color.levels[1] : 0;
+			v2 = centerSensor !== undefined ? centerSensor.color.levels[1] : 0;
+			v3 = rightSensor !== undefined ? rightSensor.color.levels[1] : 0;
+		}
+		if (v1 === 0 && v2 === 0 && v3 === 0)
 			return undefined;
-		v1 = v1 > c1 ? v1 : c1;
-		v2 = v2 > c2 ? v2 : c2;
-		v3 = v3 > c3 ? v3 : c3;
 		return v1 > v2 ? leftSensor : v2 > v3 ? centerSensor : rightSensor;
 	}
 
@@ -202,7 +213,7 @@ class Ant {
 		return (steer);
 	}
 
-	applyFlockBehaviour(others) {		
+	applyFlockBehaviour(others) {
 		let sep = this.separation(others);
 		let ali = this.alignment(others);
 		let coh = this.cohesion(others);
@@ -217,7 +228,7 @@ class Ant {
 		step.mult(2.0);
 		lim.mult(2.0);
 		rnd.mult(1.0);
-		h.mult(10.0);
+		h.mult(2.0);
 
 
 		if (conf.use_separation) this.applyForce(sep);
@@ -225,16 +236,18 @@ class Ant {
 		if (conf.use_cohesion) this.applyForce(coh);
 		if (conf.track_steps) this.applyForce(step);
 		if (conf.obey_limits) this.applyForce(lim);
-		if (this.state === STATES.SEEK) {
-			if (conf.go_random) this.applyForce(rnd);
-		}
-		else if (this.state === STATES.HOME) {
+		// if (this.state === STATES.SEEK) {
+		if (conf.go_random) this.applyForce(rnd);
+		// }
+		// else if (this.state === STATES.HOME) {
+		if (this.state === STATES.HOME) {
 			this.applyForce(h);
 		}
+		// }
 	}
 
 	limits() {
-		let extent = 3000;
+		let extent = 2000;
 		let desired = new p5.Vector(0, 0);
 		let steer;
 		if (this.pos.x < -extent || this.pos.x > extent || this.pos.y < -extent || this.pos.y > extent) {
@@ -337,19 +350,36 @@ class Ant {
 	}
 
 	foundFood(food) {
-		for (let i = 0; i < food.length; i++) {
-			if (this.pos.dist(food[i].pos) <= food[i].size / 2) {
-				this.state = STATES.HOME;
-				return true;
+		if (this.state === STATES.SEEK) {
+			for (let i = 0; i < food.length; i++) {
+				let left = this.leftTarget.dist(food[i].pos) <= food[i].size / 2;
+				let center = this.centerTarget.dist(food[i].pos) <= food[i].size / 2;
+				let right = this.rightTarget.dist(food[i].pos) <= food[i].size / 2;
+				if (left || center || right) {
+					food[i].eat();
+					this.state = STATES.HOME;
+					this.vel.mult(-1);
+					return true;
+				}
 			}
 		}
-		return false;
+		// return false;
 	}
-	
-	reachedHome() {
-		if(this.state === STATES.HOME) {
-			if(this.pos.dist(this.home) <= 20) {
-				this.state = STATES.SEEK;
+
+	reachedHome(home) {
+		if (this.state === STATES.HOME) {
+			for (let i = 0; i < home.length; i++) {
+				let sensorDist = 100;
+				// this.leftTarget = this.vel.copy().normalize().rotate(-PI / 4).mult(sensorDist).add(this.pos);
+				// this.centerTarget = this.vel.copy().normalize().rotate(0).mult(sensorDist).add(this.pos);
+				// this.rightTarget = this.vel.copy().normalize().rotate(PI / 4).mult(sensorDist).add(this.pos);
+				let left = this.leftTarget.dist(home[i].pos) <= home[i].size / 2;
+				let center = this.centerTarget.dist(home[i].pos) <= home[i].size / 2;
+				let right = this.rightTarget.dist(home[i].pos) <= home[i].size / 2;
+				if (left || center || right) {
+					this.state = STATES.SEEK;
+					this.vel.mult(-1);
+				}
 			}
 		}
 	}

@@ -1,15 +1,15 @@
 var gui;
 let conf = {
-	use_separation : true,
-	use_alignment : true,
-	use_cohesion : true,
+	use_separation : false,
+	use_alignment : false,
+	use_cohesion : false,
 	track_steps : true,
 	obey_limits : true,
 	go_random : true,
 	val_separation : 0.5,
 	val_alignment : 0.5,
 	val_cohesion : 0.5,
-	val_steps : 2.0,
+	val_steps : 3.0,
 	val_limits : 2.0,
 	val_random : 1.0
 }
@@ -34,6 +34,7 @@ function s2w(pt) {
 
 let ants = [];
 let food = [];
+let home = [];
 let cellSize = 50;
 let gridSize = 10;
 let grid;
@@ -121,7 +122,7 @@ function fadeSteps() {
 // Выполняется 60 раз в секунду (как правило)
 function draw() {
 	background(0);
-	if (frameCount % 20 === 0)
+	if (frameCount % 50 === 0)
 		fadeSteps();
 
 	fill(50);
@@ -161,18 +162,19 @@ function draw() {
 		noStroke();
 		for (let i = 0; i < steps.length; i++) {
 			fill(steps[i].color);
-			// rect(steps[i].x, steps[i].y, cellSize, cellSize);
-			let v = steps[i].color.levels[0];
-			circle(steps[i].x, steps[i].y, map(v, 0, 255, cellSize/2, cellSize*2));
+			let v = (steps[i].color.levels[1] + steps[i].color.levels[2]) / 2;
+			let cs = map(v, 0, 255, cellSize/2, cellSize*2);
+			rect(steps[i].x, steps[i].y, cs, cs);
+			// circle(steps[i].x, steps[i].y, map(v, 0, 255, cellSize/2, cellSize*2));
 		}
 
 
 	}
 
 	ants.forEach(ant => {
-		ant.look(walls);
+		// ant.look(walls);
 		ant.foundFood(food);
-		ant.reachedHome();
+		ant.reachedHome(home);
 		ant.applyFlockBehaviour(ants);
 		// ant.seek(s2w(createVector(mouseX, mouseY)));
 		ant.run();
@@ -180,6 +182,9 @@ function draw() {
 
 	for(let i = 0; i < food.length; i++) {
 		food[i].draw();
+	}
+	for(let i = 0; i < home.length; i++) {
+		home[i].draw();
 	}
 
 
@@ -226,10 +231,21 @@ function mousePressed() {
 		view.isDragging = true;
 		view.pCenter.set(mouseX, mouseY);
 	} else if (mouseButton === LEFT && keyIsPressed === false) {
-		ants.push(new Ant(s2w(createVector(mouseX, mouseY)), steps));
+		ants.push(new Ant(s2w(createVector(mouseX, mouseY)), steps, home.length > 0 ? home[0].pos : s2w(createVector(mouseX, mouseY))));
 	} else if(mouseButton === LEFT && keyCode === CONTROL) {
-		food.push(new Food(s2w(createVector(mouseX, mouseY)), 300));
+		food.push(new Food(s2w(createVector(mouseX, mouseY)), 600));
 		console.log('food add');
+	} else if(mouseButton === LEFT && keyCode === ALT) {
+		home.push(new Home(s2w(createVector(mouseX, mouseY)), 600));
+		console.log('home add');
+	} else if (mouseButton === LEFT && keyCode === SHIFT) {
+		let coord = s2w(createVector(mouseX, mouseY));
+		for(let i = 0; i < food.length; i++) {
+			if(coord.dist(food[i].pos) < food[i].size) {
+				food.splice(i, 1);
+				i--;
+			}
+		}
 	}
 
 }
