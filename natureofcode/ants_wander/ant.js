@@ -86,7 +86,8 @@ class Ant {
 		// let randomDir = this.vel.copy().normalize().setHeading(random(PI/2) - PI/4);
 		// console.log(noise(this.noiseVal) * PI/4 - PI/8);
 		let m = this.vel.mag();
-		let randomDir = this.vel.copy().normalize().rotate(noise(this.noiseVal) * PI / 2 - PI/4).mult(50).add(this.pos);
+		let randomDir = this.vel.copy().normalize().rotate(noise(this.noiseVal) * PI / 2 - PI/4).mult(50).add(this.pos); //perlin noise приводит к округлым образованиям
+		// let randomDir = this.vel.copy().normalize().rotate(random(PI / 2) - PI / 4).setMag(50).add(this.pos); //рандом разрастается как растение
 		this.curTarget.set(randomDir);
 		return randomDir;//.add(this.vel);
 	}

@@ -125,6 +125,7 @@ function fadeSteps() {
 		steps[i].color = color(red, green, blue, alpha);
 		if(red == 0 && green == 0 && blue == 0)
 			steps.splice(i, 1);
+			i--;
 	}
 }
 

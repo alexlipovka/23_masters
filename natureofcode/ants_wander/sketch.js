@@ -76,6 +76,10 @@ function fadeSteps() {
 		let blue = constrain(c.levels[2] + colorShift, 0, 255)
 		let alpha = constrain(c.levels[3], 0, 255)
 		steps[i].color = color(red, green, blue, alpha);
+		if(red == 0 && green == 0 && blue == 0) {
+			steps.splice(i, 1);
+			i--;
+		}
 	}
 }
 
