@@ -118,7 +118,7 @@ class Ant {
 	}
 
 	chooseSensor() {
-		let sensorDist = 150;
+		let sensorDist = 100;
 		this.leftTarget = this.vel.copy().normalize().rotate(-PI / 4).mult(sensorDist).add(this.pos);
 		this.centerTarget = this.vel.copy().normalize().rotate(0).mult(sensorDist).add(this.pos);
 		this.rightTarget = this.vel.copy().normalize().rotate(PI / 4).mult(sensorDist).add(this.pos);
@@ -356,9 +356,12 @@ class Ant {
 				let center = this.centerTarget.dist(food[i].pos) <= food[i].size / 2;
 				let right = this.rightTarget.dist(food[i].pos) <= food[i].size / 2;
 				if (left || center || right) {
-					food[i].eat();
-					this.state = STATES.HOME;
-					this.vel.mult(-1);
+					this.applyForce(this.seek(food[i].pos));
+					if (this.pos.dist(food[i].pos) <= food[i].size / 2) {
+						food[i].eat();
+						this.state = STATES.HOME;
+						this.vel.mult(-1);
+					}
 					return true;
 				}
 			}
@@ -377,8 +380,11 @@ class Ant {
 				let center = this.centerTarget.dist(home[i].pos) <= home[i].size / 2;
 				let right = this.rightTarget.dist(home[i].pos) <= home[i].size / 2;
 				if (left || center || right) {
-					this.state = STATES.SEEK;
-					this.vel.mult(-1);
+					this.applyForce(this.seek(home[i].pos));
+					if (this.pos.dist(home[i].pos) <= home[i].size / 2) {
+						this.state = STATES.SEEK;
+						this.vel.mult(-1);
+					}
 				}
 			}
 		}

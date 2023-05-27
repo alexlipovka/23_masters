@@ -11,7 +11,10 @@ let conf = {
 	val_cohesion : 0.5,
 	val_steps : 3.0,
 	val_limits : 2.0,
-	val_random : 1.0
+	val_random : 1.0,
+	draw_circle_steps: true,
+	min_step_size: 0.1,
+	max_step_size: 3
 }
 
 
@@ -71,18 +74,23 @@ function setup() {
 	smooth();
 
 	gui = new dat.GUI();
-	gui.add(conf, 'use_separation');
-	gui.add(conf, 'val_separation', 0, 5);
-	gui.add(conf, 'use_alignment');
-	gui.add(conf, 'val_alignment', 0, 5);
-	gui.add(conf, 'use_cohesion');
-	gui.add(conf, 'val_cohesion', 0, 5);
-	gui.add(conf, 'track_steps');
-	gui.add(conf, 'val_steps', 0, 5);
-	gui.add(conf, 'obey_limits');
-	gui.add(conf, 'val_limits', 0, 5);
-	gui.add(conf, 'go_random');
-	gui.add(conf, 'val_random', 0, 5);
+	let bhvFolder = gui.addFolder('Behaviour');
+	bhvFolder.add(conf, 'use_separation');
+	bhvFolder.add(conf, 'val_separation', 0, 5);
+	bhvFolder.add(conf, 'use_alignment');
+	bhvFolder.add(conf, 'val_alignment', 0, 5);
+	bhvFolder.add(conf, 'use_cohesion');
+	bhvFolder.add(conf, 'val_cohesion', 0, 5);
+	bhvFolder.add(conf, 'track_steps');
+	bhvFolder.add(conf, 'val_steps', 0, 5);
+	bhvFolder.add(conf, 'obey_limits');
+	bhvFolder.add(conf, 'val_limits', 0, 5);
+	bhvFolder.add(conf, 'go_random');
+	bhvFolder.add(conf, 'val_random', 0, 5);
+	let visFolder = gui.addFolder('Visual');
+	visFolder.add(conf, 'draw_circle_steps');
+	visFolder.add(conf, 'min_step_size', 0.1, 4);
+	visFolder.add(conf, 'max_step_size', 0.1, 4);
 }
 
 function pushStep(x, y, pushColor) {
@@ -115,6 +123,8 @@ function fadeSteps() {
 		let blue = constrain(c.levels[2] + colorShift, 0, 255)
 		let alpha = constrain(c.levels[3], 0, 255)
 		steps[i].color = color(red, green, blue, alpha);
+		if(red == 0 && green == 0 && blue == 0)
+			steps.splice(i, 1);
 	}
 }
 
@@ -163,9 +173,10 @@ function draw() {
 		for (let i = 0; i < steps.length; i++) {
 			fill(steps[i].color);
 			let v = (steps[i].color.levels[1] + steps[i].color.levels[2]) / 2;
-			let cs = map(v, 0, 255, cellSize/2, cellSize*2);
-			rect(steps[i].x, steps[i].y, cs, cs);
-			// circle(steps[i].x, steps[i].y, map(v, 0, 255, cellSize/2, cellSize*2));
+			let cs = map(v, 0, 255, cellSize * conf.min_step_size, cellSize * conf.max_step_size);
+			conf.draw_circle_steps
+				? circle(steps[i].x, steps[i].y, cs)
+				: rect(steps[i].x, steps[i].y, cs);
 		}
 
 
@@ -233,10 +244,10 @@ function mousePressed() {
 	} else if (mouseButton === LEFT && keyIsPressed === false) {
 		ants.push(new Ant(s2w(createVector(mouseX, mouseY)), steps, home.length > 0 ? home[0].pos : s2w(createVector(mouseX, mouseY))));
 	} else if(mouseButton === LEFT && keyCode === CONTROL) {
-		food.push(new Food(s2w(createVector(mouseX, mouseY)), 600));
+		food.push(new Food(s2w(createVector(mouseX, mouseY)), random(150, 600)));
 		console.log('food add');
 	} else if(mouseButton === LEFT && keyCode === ALT) {
-		home.push(new Home(s2w(createVector(mouseX, mouseY)), 600));
+		home.push(new Home(s2w(createVector(mouseX, mouseY)), 300));
 		console.log('home add');
 	} else if (mouseButton === LEFT && keyCode === SHIFT) {
 		let coord = s2w(createVector(mouseX, mouseY));
