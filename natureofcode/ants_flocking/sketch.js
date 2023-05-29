@@ -14,7 +14,8 @@ let conf = {
 	val_random : 1.0,
 	draw_circle_steps: true,
 	min_step_size: 0.1,
-	max_step_size: 3
+	max_step_size: 3,
+	use_noise_random: false
 }
 
 
@@ -44,11 +45,13 @@ let grid;
 let steps = [];
 let stepExtent = [new p5.Vector(0, 0), new p5.Vector(0, 0)];
 
-let walls = [[new p5.Vector(-500, -500), new p5.Vector(-500, 500)],
-						[new p5.Vector(500, -500), new p5.Vector(500, 500)],
-						[new p5.Vector(-2000, -2000), new p5.Vector(-2000, 2000)],
-						[new p5.Vector(2000, -2000), new p5.Vector(2000, 2000)]];
-
+let wLim = 1000;
+let x_1;
+let x_2;
+let y_1;
+let y_2;
+let walls = [];
+let stPt;
 
 function preload() {
 	myFont = loadFont('./assets/Roboto-Regular.ttf');
@@ -57,21 +60,34 @@ function preload() {
 // Настройка приложения
 // Данная функция будет выполнена первой и только один раз
 function setup() {
+	document.addEventListener('contextmenu', event => event.preventDefault());
 	createCanvas(windowWidth, windowHeight, WEBGL);
 	ortho();
 	view.center.set(width / 2, height / 2);
 	view.pCenter.set(view.center);
 
-	grid = createImage(gridSize, gridSize);
-	grid.loadPixels();
-	for (let p = 0; p < grid.pixels.length; p += 4) {
-		grid.pixels[p] = 0;
-		grid.pixels[p + 1] = 0;
-		grid.pixels[p + 2] = 0;
-		grid.pixels[p + 3] = 255;
-	}
-	grid.updatePixels();
-	smooth();
+	// grid = createImage(gridSize, gridSize);
+	// grid.loadPixels();
+	// for (let p = 0; p < grid.pixels.length; p += 4) {
+	// 	grid.pixels[p] = 0;
+	// 	grid.pixels[p + 1] = 0;
+	// 	grid.pixels[p + 2] = 0;
+	// 	grid.pixels[p + 3] = 255;
+	// }
+	// grid.updatePixels();
+	// smooth();
+
+	x_1 = random(-wLim, wLim);
+	x_2 = random(-wLim, wLim);
+	y_1 = random(-wLim, wLim);
+	y_2 = random(-wLim, wLim);
+	walls = [
+							[new p5.Vector(x_1, y_1), new p5.Vector(x_2, y_1)],
+							[new p5.Vector(x_2, y_1), new p5.Vector(x_2, y_2)],
+							[new p5.Vector(x_2, y_2), new p5.Vector(x_1, y_2)],
+							[new p5.Vector(x_1, y_2), new p5.Vector(x_1, y_1)]
+						];
+	console.log(walls);
 
 	gui = new dat.GUI();
 	let bhvFolder = gui.addFolder('Behaviour');
@@ -87,6 +103,7 @@ function setup() {
 	bhvFolder.add(conf, 'val_limits', 0, 5);
 	bhvFolder.add(conf, 'go_random');
 	bhvFolder.add(conf, 'val_random', 0, 5);
+	bhvFolder.add(conf, 'use_noise_random');
 	let visFolder = gui.addFolder('Visual');
 	visFolder.add(conf, 'draw_circle_steps');
 	visFolder.add(conf, 'min_step_size', 0.1, 4);
@@ -123,9 +140,11 @@ function fadeSteps() {
 		let blue = constrain(c.levels[2] + colorShift, 0, 255)
 		let alpha = constrain(c.levels[3], 0, 255)
 		steps[i].color = color(red, green, blue, alpha);
-		if(red == 0 && green == 0 && blue == 0)
+		if(red === 0 && green === 0 && blue === 0) {
+			// console.log(`removing step ${i}`);
 			steps.splice(i, 1);
-			i--;
+			// i--;
+		}
 	}
 }
 
@@ -133,7 +152,7 @@ function fadeSteps() {
 // Выполняется 60 раз в секунду (как правило)
 function draw() {
 	background(0);
-	if (frameCount % 50 === 0)
+	if (frameCount % 10 === 0)
 		fadeSteps();
 
 	fill(50);
@@ -156,7 +175,7 @@ function draw() {
 
 
 		let gridOff = cellSize * gridSize / 2 - cellSize / 2;
-		grid.loadPixels();
+		// grid.loadPixels();
 		rectMode(CENTER);
 		for (let a = 0; a < ants.length; a++) {
 			let x = round(ants[a].pos.x / cellSize) * cellSize;
@@ -188,6 +207,7 @@ function draw() {
 		ant.foundFood(food);
 		ant.reachedHome(home);
 		ant.applyFlockBehaviour(ants);
+		ant.avoidWalls(walls);
 		// ant.seek(s2w(createVector(mouseX, mouseY)));
 		ant.run();
 	});
@@ -226,11 +246,12 @@ function draw() {
 }
 
 function drawWalls() {
-	stroke(80);
+	stroke(160);
+	strokeWeight(2);
 	for(let i = 0; i < walls.length; i++) {
 		line(walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y);
 	}
-
+	strokeWeight(1);
 }
 
 // Вспомогательная функция, которая реагирует на изменения размера
@@ -260,6 +281,10 @@ function mousePressed() {
 		}
 	}
 
+	if(mouseButton === RIGHT) {
+		stPt = s2w(createVector(mouseX, mouseY));
+	}
+
 }
 
 function mouseReleased() {
@@ -268,6 +293,11 @@ function mouseReleased() {
 		let diff = new p5.Vector(mouseX, mouseY).sub(view.pCenter);
 		view.center.add(diff);
 		view.pCenter.set(view.center);
+	}
+
+	if(mouseButton === RIGHT) {
+		let endPt = s2w(createVector(mouseX, mouseY));
+		walls.push([stPt, endPt]);
 	}
 }
 

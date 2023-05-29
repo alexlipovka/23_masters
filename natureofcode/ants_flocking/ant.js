@@ -1,5 +1,5 @@
 const WAIT = 50;
-const MAXSPEED = 15;
+const MAXSPEED = 25;
 const STATES = {
 	'HOME': 0,
 	'SEEK': 1,
@@ -19,7 +19,7 @@ class Ant {
 
 		this.state = STATES.SEEK,
 			this.reachedGoal = false;
-		this.steps = 0;
+		// this.steps = 0;
 		this.targets = [];
 		this.targets.push(this.home);
 		this.noiseScale = 0.01;
@@ -30,10 +30,10 @@ class Ant {
 		this.rightTarget = new p5.Vector(0, 0);
 		this.world = world;
 		this.desiredSeparation = 400;
-		// this.rays = [];
-		// for (let a = 0; a < 360; a += 10) {
-		// 	this.rays.push(new Ray(this.pos, radians(a)));
-		// }
+		this.rays = [];
+		for (let a = 0; a < 360; a += 1) {
+			this.rays.push(new Ray(this.pos, radians(a)));
+		}
 	}
 
 	run() {
@@ -43,11 +43,12 @@ class Ant {
 
 	draw() {
 		// fill(map(this.vel.mag(), 0, MAXSPEED, 0, 255), 0, 0);
-		stroke(255);
+		// stroke(255);
+		noStroke()
 		if (this.state === STATES.SEEK) {
-			fill(0, 255, 0);
+			fill(0, 210, 0);
 		} else {
-			fill(0, 0, 255);
+			fill(0, 0, 210);
 		}
 		// this.reachedGoal ? stroke(0, 255, 0) : noStroke();
 		push();
@@ -59,11 +60,15 @@ class Ant {
 			vertex(-10, 8);
 			vertex(20, 0);
 			endShape(CLOSE);
+			if(this.state === STATES.HOME) {
+				fill(0, 0, 255);
+				circle(24, 0, 8);
+			}
 		}
 
-		noFill();
-		stroke(100);
-		circle(0, 0, this.desiredSeparation);
+		// noFill();
+		// stroke(100);
+		// circle(0, 0, this.desiredSeparation);
 
 		noStroke();
 		fill(255, 0, 0);
@@ -71,10 +76,10 @@ class Ant {
 
 		pop();
 
-		fill(0, 255, 0);
-		circle(this.leftTarget.x, this.leftTarget.y, 4);
-		circle(this.centerTarget.x, this.centerTarget.y, 4);
-		circle(this.rightTarget.x, this.rightTarget.y, 4);
+		// fill(0, 255, 0);
+		// circle(this.leftTarget.x, this.leftTarget.y, 4);
+		// circle(this.centerTarget.x, this.centerTarget.y, 4);
+		// circle(this.rightTarget.x, this.rightTarget.y, 4);
 
 		fill(0, 0, 255);
 		noStroke();
@@ -105,8 +110,10 @@ class Ant {
 		// console.log(noise(this.noiseVal) * PI/4 - PI/8);
 		let randomDir;
 		if (this.vel.mag() > 0) {
-			// randomDir = this.vel.copy().normalize().rotate(noise(this.noiseVal) * PI / 4 - PI / 8).setMag(this.maxSpeed);
-			randomDir = this.vel.copy().normalize().rotate(random(PI / 4) - PI / 8).setMag(this.maxSpeed);
+			if (conf.use_noise_random)
+				randomDir = this.vel.copy().normalize().rotate(noise(this.noiseVal) * PI / 4 - PI / 8).setMag(this.maxSpeed);
+			else
+				randomDir = this.vel.copy().normalize().rotate(random(PI / 4) - PI / 8).setMag(this.maxSpeed);
 			// console.log(randomDir);
 		} else {
 			randomDir = createVector(1, 0).normalize().setHeading(random(PI * 2) - PI).normalize();
@@ -137,12 +144,12 @@ class Ant {
 		let v2 = 0;
 		let v3 = 0;
 		if (this.state === STATES.SEEK) {
-			console.log('Seeking');
+			// console.log('Seeking');
 			v1 = leftSensor !== undefined ? leftSensor.color.levels[2] : 0;
 			v2 = centerSensor !== undefined ? centerSensor.color.levels[2] : 0;
 			v3 = rightSensor !== undefined ? rightSensor.color.levels[2] : 0;
 		} else {//if(this.state === STATES.HOME)
-			console.log('Going home');
+			// console.log('Going home');
 			v1 = leftSensor !== undefined ? leftSensor.color.levels[1] : 0;
 			v2 = centerSensor !== undefined ? centerSensor.color.levels[1] : 0;
 			v3 = rightSensor !== undefined ? rightSensor.color.levels[1] : 0;
@@ -225,10 +232,10 @@ class Ant {
 		sep.mult(0.5);
 		ali.mult(0.5);
 		coh.mult(0.5);
-		step.mult(2.0);
+		step.mult(1.5);
 		lim.mult(2.0);
 		rnd.mult(1.0);
-		h.mult(2.0);
+		h.mult(1.0);
 
 
 		if (conf.use_separation) this.applyForce(sep);
@@ -236,18 +243,14 @@ class Ant {
 		if (conf.use_cohesion) this.applyForce(coh);
 		if (conf.track_steps) this.applyForce(step);
 		if (conf.obey_limits) this.applyForce(lim);
-		// if (this.state === STATES.SEEK) {
 		if (conf.go_random) this.applyForce(rnd);
-		// }
-		// else if (this.state === STATES.HOME) {
 		if (this.state === STATES.HOME) {
 			this.applyForce(h);
 		}
-		// }
 	}
 
 	limits() {
-		let extent = 2000;
+		let extent = 3000;
 		let desired = new p5.Vector(0, 0);
 		let steer;
 		if (this.pos.x < -extent || this.pos.x > extent || this.pos.y < -extent || this.pos.y > extent) {
@@ -255,8 +258,6 @@ class Ant {
 			if (this.pos.x > extent) desired.add(new p5.Vector(-this.maxSpeed, this.vel.y));
 			if (this.pos.y < -extent) desired.add(new p5.Vector(this.vel.x, this.maxSpeed));
 			if (this.pos.y > -extent) desired.add(new p5.Vector(this.vel.x, -this.maxSpeed));
-			// console.log(this.pos);
-			// console.log(desired);
 		}
 
 
@@ -267,6 +268,14 @@ class Ant {
 	}
 	seek(target) {
 		let desired = target.copy().sub(this.pos);
+		desired.setMag(this.maxSpeed);
+		let steer = desired.sub(this.vel);
+		steer.limit(this.maxForce);
+		return steer;
+	}
+
+	avoid(target) {
+		let desired = this.pos.copy().sub(target);
 		desired.setMag(this.maxSpeed);
 		let steer = desired.sub(this.vel);
 		steer.limit(this.maxForce);
@@ -370,7 +379,7 @@ class Ant {
 	}
 
 	reachedHome(home) {
-		if (this.state === STATES.HOME) {
+		// if (this.state === STATES.HOME) {
 			for (let i = 0; i < home.length; i++) {
 				let sensorDist = 100;
 				// this.leftTarget = this.vel.copy().normalize().rotate(-PI / 4).mult(sensorDist).add(this.pos);
@@ -380,13 +389,16 @@ class Ant {
 				let center = this.centerTarget.dist(home[i].pos) <= home[i].size / 2;
 				let right = this.rightTarget.dist(home[i].pos) <= home[i].size / 2;
 				if (left || center || right) {
-					this.applyForce(this.seek(home[i].pos));
+					// if(this.state === STATES.HOME)
+						this.applyForce(this.seek(home[i].pos));
+					// else
+					// 	this.applyForce(this.avoid(home[i].pos));
 					if (this.pos.dist(home[i].pos) <= home[i].size / 2) {
 						this.state = STATES.SEEK;
 						this.vel.mult(-1);
 					}
 				}
-			}
+			// }
 		}
 	}
 
@@ -394,10 +406,11 @@ class Ant {
 		for (let ray of this.rays) {
 			let closest = null;
 			let record = Infinity;
+			let d;
 			for (let wall of walls) {
 				const pt = ray.cast(wall);
 				if (pt) {
-					const d = p5.Vector.dist(this.pos, pt);
+					d = p5.Vector.dist(this.pos, pt);
 					if (d < record) {
 						record = d;
 						closest = pt;
@@ -405,13 +418,76 @@ class Ant {
 				}
 			}
 			if (closest) {
-				stroke(255, 120);
-				line(this.pos.x, this.pos.y, closest.x, closest.y);
+				this.applyForce(this.avoid(closest));
+				// stroke(255, 120);
+				// line(this.pos.x, this.pos.y, closest.x, closest.y);
 				fill(255, 120);
 				noStroke();
 				ellipse(closest.x, closest.y, 5);
 			}
 		}
+	}
+
+	wallIsNear(wall) {
+		for (let ray of this.rays) {
+			let closest = null;
+			let record = Infinity;
+			let d;
+
+			const pt = ray.cast(wall);
+			if (pt) {
+				d = p5.Vector.dist(this.pos, pt);
+				if (d < record) {
+					record = d;
+					closest = pt;
+				}
+			}
+			if (closest && d < 100) {
+				fill(255);
+				noStroke();
+				circle(pt.x, pt.y, 10);
+				stroke(255, 120);
+				line(this.pos.x, this.pos.y, closest.x, closest.y);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	avoidWalls(walls) {
+		for (let i = 0; i < walls.length; i++) {
+			let predict = this.vel.copy().setMag(this.maxSpeed).add(this.pos);
+			// let predict = this.pos.copy(this.vel);
+			let a = walls[i][0].copy();
+			let b = walls[i][1].copy();
+			let normalPoint = this.getNormalPoint(predict, a, b);
+			let dir = walls[i][1].copy().sub(walls[i][1]);
+			dir.setMag(this.maxSpeed*2);
+			let target = normalPoint.copy().add(dir);
+			let d = normalPoint.dist(predict);
+			
+			// fill(0, 0, 255);
+			// noStroke();
+			// circle(predict.x, predict.y, 10);
+			// fill(255, 0, 255);
+			// circle(target.x, target.y, 10);
+			if (d < 50 && this.wallIsNear(walls[i])) {
+				console.log('obstacle');
+				// console.log(this.pos, target);
+				stroke(255, 0, 0, 120);
+				line(this.pos.x, this.pos.y, normalPoint.x, normalPoint.y);
+				this.applyForce(this.avoid(target));
+			}
+		}
+	}
+
+	getNormalPoint(predictPos, a, b) {
+		let ap = predictPos.copy().sub(a);
+		let ab = b.copy().sub(a);
+		ab.normalize();
+		ab.mult(ap.dot(ab));
+
+		return a.copy().add(ab);
 	}
 
 }
