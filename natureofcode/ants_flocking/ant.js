@@ -361,13 +361,23 @@ class Ant {
 	foundFood(food) {
 		if (this.state === STATES.SEEK) {
 			for (let i = 0; i < food.length; i++) {
-				let left = this.leftTarget.dist(food[i].pos) <= food[i].size / 2;
-				let center = this.centerTarget.dist(food[i].pos) <= food[i].size / 2;
-				let right = this.rightTarget.dist(food[i].pos) <= food[i].size / 2;
-				if (left || center || right) {
+				let ang = this.vel.angleBetween(food[i].pos.copy().sub(this.pos));
+				let d = this.pos.dist(food[i].pos);
+				let found = false;
+				if(Math.abs(ang) <= PI/2 && d <= food[i].size / 2 + 100)
+					found = true;
+				// console.log(ang);
+				// let left = this.leftTarget.dist(food[i].pos) <= food[i].size / 2;
+				// let center = this.centerTarget.dist(food[i].pos) <= food[i].size / 2;
+				// let right = this.rightTarget.dist(food[i].pos) <= food[i].size / 2;
+				if (found) {
 					this.applyForce(this.seek(food[i].pos));
 					if (this.pos.dist(food[i].pos) <= food[i].size / 2) {
 						food[i].eat();
+						if(food[i].size < 100) {
+							food.splice[i, 1];
+							i--;
+						}
 						this.state = STATES.HOME;
 						this.vel.mult(-1);
 					}

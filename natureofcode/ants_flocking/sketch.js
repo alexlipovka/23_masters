@@ -77,15 +77,15 @@ function setup() {
 	// grid.updatePixels();
 	// smooth();
 
-	x_1 = random(-wLim, wLim);
-	x_2 = random(-wLim, wLim);
-	y_1 = random(-wLim, wLim);
-	y_2 = random(-wLim, wLim);
+	v_1 = p5.Vector.random2D().mult(wLim).sub(wLim/2);
+	v_2 = p5.Vector.random2D().mult(wLim).sub(wLim/2);
+	v_3 = p5.Vector.random2D().mult(wLim).sub(wLim/2);
+	v_4 = p5.Vector.random2D().mult(wLim).sub(wLim/2);
 	walls = [
-							[new p5.Vector(x_1, y_1), new p5.Vector(x_2, y_1)],
-							[new p5.Vector(x_2, y_1), new p5.Vector(x_2, y_2)],
-							[new p5.Vector(x_2, y_2), new p5.Vector(x_1, y_2)],
-							[new p5.Vector(x_1, y_2), new p5.Vector(x_1, y_1)]
+							[v_1, v_2],
+							[v_2, v_3],
+							[v_3, v_4],
+							[v_4, v_1]
 						];
 	console.log(walls);
 
@@ -270,6 +270,9 @@ function mousePressed() {
 		console.log('food add');
 	} else if(mouseButton === LEFT && keyCode === ALT) {
 		home.push(new Home(s2w(createVector(mouseX, mouseY)), 300));
+		for(let ant in ants) {
+			ant.home = home[home.length-1];
+		}
 		console.log('home add');
 	} else if (mouseButton === LEFT && keyCode === SHIFT) {
 		let coord = s2w(createVector(mouseX, mouseY));
