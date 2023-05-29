@@ -12,7 +12,7 @@ let conf = {
 	val_steps : 3.0,
 	val_limits : 2.0,
 	val_random : 1.0,
-	draw_circle_steps: true,
+	draw_circle_steps: false,
 	min_step_size: 0.1,
 	max_step_size: 3,
 	use_noise_random: false

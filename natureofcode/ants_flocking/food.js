@@ -5,7 +5,7 @@ class Food {
 	}
 
 	draw() {
-		fill(0, 0, 255);
+		fill(0, 0, 255, 120);
 		noStroke();
 		circle(this.pos.x, this.pos.y, this.size);
 	}
@@ -22,7 +22,7 @@ class Home {
 	}
 
 	draw() {
-		fill(0, 255, 0);
+		fill(0, 255, 0, 120);
 		noStroke();
 		circle(this.pos.x, this.pos.y, this.size);
 	}

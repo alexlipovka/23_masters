@@ -96,7 +96,6 @@ class Ant {
 		this.vel.limit(this.maxSpeed);
 		this.pos.add(this.vel);
 		this.acc.mult(0);
-		// console.log(this.vel.mag());
 	}
 
 	applyForce(force) {
@@ -105,37 +104,40 @@ class Ant {
 		this.acc.add(f);
 	}
 
+	snapCoord(val, grid) {
+		return(round(val / grid) * grid);
+	}
+
+	//Модель случайного движения
 	chooseRandomDir() {
-		// let randomDir = this.vel.copy().normalize().setHeading(random(PI/2) - PI/4);
-		// console.log(noise(this.noiseVal) * PI/4 - PI/8);
 		let randomDir;
+		let FOV = PI/2;
 		if (this.vel.mag() > 0) {
 			if (conf.use_noise_random)
-				randomDir = this.vel.copy().normalize().rotate(noise(this.noiseVal) * PI / 4 - PI / 8).setMag(this.maxSpeed);
+				randomDir = this.vel.copy().normalize().rotate(noise(this.noiseVal) * FOV - FOV / 2).setMag(this.maxSpeed);
 			else
-				randomDir = this.vel.copy().normalize().rotate(random(PI / 4) - PI / 8).setMag(this.maxSpeed);
-			// console.log(randomDir);
+				randomDir = this.vel.copy().normalize().rotate(random(FOV) - FOV / 2).setMag(this.maxSpeed);
 		} else {
 			randomDir = createVector(1, 0).normalize().setHeading(random(PI * 2) - PI).normalize();
-			// console.log(`from scratch`);
 		}
-		// randomDir.add(this.pos);
 		this.curTarget.set(randomDir);
 		return randomDir;//.add(this.vel);
 	}
 
+	//Нащупывание следа
 	chooseSensor() {
 		let sensorDist = 100;
-		this.leftTarget = this.vel.copy().normalize().rotate(-PI / 4).mult(sensorDist).add(this.pos);
+		let sensorAngle = PI/4;
+		this.leftTarget = this.vel.copy().normalize().rotate(-sensorAngle).mult(sensorDist).add(this.pos);
 		this.centerTarget = this.vel.copy().normalize().rotate(0).mult(sensorDist).add(this.pos);
-		this.rightTarget = this.vel.copy().normalize().rotate(PI / 4).mult(sensorDist).add(this.pos);
+		this.rightTarget = this.vel.copy().normalize().rotate(sensorAngle).mult(sensorDist).add(this.pos);
 
-		let leftX = round(this.leftTarget.x / cellSize) * cellSize;
-		let leftY = round(this.leftTarget.y / cellSize) * cellSize;
-		let centerX = round(this.centerTarget.x / cellSize) * cellSize;
-		let centerY = round(this.centerTarget.y / cellSize) * cellSize;
-		let rightX = round(this.rightTarget.x / cellSize) * cellSize;
-		let rightY = round(this.rightTarget.y / cellSize) * cellSize;
+		let leftX = this.snapCoord(this.leftTarget.x, cellSize);// * cellSize;
+		let leftY = this.snapCoord(this.leftTarget.y, cellSize);// * cellSize;
+		let centerX = this.snapCoord(this.centerTarget.x, cellSize);// * cellSize;
+		let centerY = this.snapCoord(this.centerTarget.y, cellSize);// * cellSize;
+		let rightX = this.snapCoord(this.rightTarget.x, cellSize);// * cellSize;
+		let rightY = this.snapCoord(this.rightTarget.y, cellSize);// * cellSize;
 
 		const leftSensor = this.world.find(w => w.x === leftX && w.y === leftY);
 		const centerSensor = this.world.find(w => w.x === centerX && w.y === centerY);
@@ -144,12 +146,10 @@ class Ant {
 		let v2 = 0;
 		let v3 = 0;
 		if (this.state === STATES.SEEK) {
-			// console.log('Seeking');
 			v1 = leftSensor !== undefined ? leftSensor.color.levels[2] : 0;
 			v2 = centerSensor !== undefined ? centerSensor.color.levels[2] : 0;
 			v3 = rightSensor !== undefined ? rightSensor.color.levels[2] : 0;
 		} else {//if(this.state === STATES.HOME)
-			// console.log('Going home');
 			v1 = leftSensor !== undefined ? leftSensor.color.levels[1] : 0;
 			v2 = centerSensor !== undefined ? centerSensor.color.levels[1] : 0;
 			v3 = rightSensor !== undefined ? rightSensor.color.levels[1] : 0;
@@ -159,47 +159,15 @@ class Ant {
 		return v1 > v2 ? leftSensor : v2 > v3 ? centerSensor : rightSensor;
 	}
 
-	defineTarget(target) {
-		let t = 0.5;
-		if (random() < t)
-			return this.chooseRandomDir();
-		if (this.steps < WAIT)
-			// return this.chooseRandomDir().mult(t).add(target.copy().mult(1-t));
-			return target;
-		if (this.state === STATES.SEEK)
-			// return this.chooseRandomDir().mult(t).add(target.copy().mult(1-t));
-			return target;
-		if (this.state === STATES.HOME)
-			// return this.chooseRandomDir().mult(t).add(this.home.copy().mult(1-t));
-			return this.home;
-	}
-
-	checkTarget(target) {
-		if (this.pos.copy().sub(target).magSq() < 400) {
-			this.state++;
-			this.state = this.state % 2;
-		}
-	}
-
-	combineTargets(target1, target2, val) {
-		return target1.copy().mult(val).add(target2.copy().mult(1 - val));
-	}
-
+	
+	//Двидение по следу
 	trackSteps() {
 		let sensor = this.chooseSensor();
 		if (sensor === undefined)
-			return new p5.Vector(0, 0);
+			return new this.pos.copy();
 		let trueTarget = new p5.Vector(sensor.x, sensor.y);
-
-		// let trueTarget = this.chooseRandomDir();
-		// if (sensor !== undefined)
-		// 	trueTarget = this.combineTargets(createVector(sensor.x, sensor.y), trueTarget, 0.6);
-
-		// this.checkTarget(trueTarget);
-		// this.checkTarget(target);
-		// if(this.state === STATES.HOME)
-		// 	trueTarget = this.home.copy();
 		let desired;
+
 		desired = trueTarget.copy().sub(this.pos);
 
 		let d = desired.mag();
@@ -210,32 +178,28 @@ class Ant {
 		} else {
 			desired.mult(this.maxSpeed);
 		}
-		// desired.setMag(this.maxSpeed);
 		let steer = desired.sub(this.vel);
 		steer.limit(this.maxForce);
-		// console.log(steer);
-
-
-		// this.applyForce(steer);
 		return (steer);
 	}
 
+	//Сложное движение, комбинация
 	applyFlockBehaviour(others) {
-		let sep = this.separation(others);
-		let ali = this.alignment(others);
-		let coh = this.cohesion(others);
-		let step = this.trackSteps();
-		let lim = this.limits();
-		let rnd = this.chooseRandomDir();
-		let h = this.seek(this.home);
+		let sep = this.separation(others);	//разделение
+		let ali = this.alignment(others);		//выравнивание
+		let coh = this.cohesion(others);		//группирование
+		let step = this.trackSteps();				//движение по следу
+		let lim = this.limits();						//соблюдение границ
+		let rnd = this.chooseRandomDir();		//случайное движение
+		let h = this.seek(this.home);				//возвращение домой
 
 		sep.mult(0.5);
 		ali.mult(0.5);
 		coh.mult(0.5);
-		step.mult(1.5);
+		step.mult(1.0);
 		lim.mult(2.0);
 		rnd.mult(1.0);
-		h.mult(1.0);
+		h.mult(0.2);
 
 
 		if (conf.use_separation) this.applyForce(sep);
@@ -249,6 +213,7 @@ class Ant {
 		}
 	}
 
+	//Соблюдение границ
 	limits() {
 		let extent = 3000;
 		let desired = new p5.Vector(0, 0);
@@ -266,6 +231,8 @@ class Ant {
 		return (steer);
 
 	}
+
+	//Поиск цели
 	seek(target) {
 		let desired = target.copy().sub(this.pos);
 		desired.setMag(this.maxSpeed);
@@ -274,6 +241,7 @@ class Ant {
 		return steer;
 	}
 
+	//Избегание цели
 	avoid(target) {
 		let desired = this.pos.copy().sub(target);
 		desired.setMag(this.maxSpeed);
@@ -282,6 +250,7 @@ class Ant {
 		return steer;
 	}
 
+	//Разделение
 	separation(others) {
 		let count = 0;
 		let sum = new p5.Vector(0, 0);
@@ -310,6 +279,7 @@ class Ant {
 			return sum;
 	}
 
+	//Выравнивание
 	alignment(others) {
 		let count = 0;
 		let sum = new p5.Vector(0, 0);
@@ -337,6 +307,7 @@ class Ant {
 			return sum;
 	}
 
+	//Группирование
 	cohesion(others) {
 		let count = 0;
 		let sum = new p5.Vector(0, 0);
@@ -358,24 +329,26 @@ class Ant {
 			return sum;
 	}
 
+	//Объект внутри конуса видимости
+	inFOV(obj, angle, distance) {
+		let ang = this.vel.angleBetween(obj.copy().sub(this.pos));
+		let d = this.pos.dist(obj);
+		if(Math.abs(ang) <= angle && d <= distance)
+			return true;
+		return false;
+	}
+
+	//Найдена пища
 	foundFood(food) {
 		if (this.state === STATES.SEEK) {
 			for (let i = 0; i < food.length; i++) {
-				let ang = this.vel.angleBetween(food[i].pos.copy().sub(this.pos));
-				let d = this.pos.dist(food[i].pos);
-				let found = false;
-				if(Math.abs(ang) <= PI/2 && d <= food[i].size / 2 + 100)
-					found = true;
-				// console.log(ang);
-				// let left = this.leftTarget.dist(food[i].pos) <= food[i].size / 2;
-				// let center = this.centerTarget.dist(food[i].pos) <= food[i].size / 2;
-				// let right = this.rightTarget.dist(food[i].pos) <= food[i].size / 2;
-				if (found) {
+				let sensorDist = 100;
+				if (this.inFOV(food[i].pos, PI/2, food[i].size / 2 + sensorDist)) {
 					this.applyForce(this.seek(food[i].pos));
 					if (this.pos.dist(food[i].pos) <= food[i].size / 2) {
 						food[i].eat();
-						if(food[i].size < 100) {
-							food.splice[i, 1];
+						if(food[i].size < 50) {
+							food.splice(i, 1);
 							i--;
 						}
 						this.state = STATES.HOME;
@@ -385,24 +358,14 @@ class Ant {
 				}
 			}
 		}
-		// return false;
 	}
-
+	
+	//Достигнут дом
 	reachedHome(home) {
-		// if (this.state === STATES.HOME) {
 			for (let i = 0; i < home.length; i++) {
 				let sensorDist = 100;
-				// this.leftTarget = this.vel.copy().normalize().rotate(-PI / 4).mult(sensorDist).add(this.pos);
-				// this.centerTarget = this.vel.copy().normalize().rotate(0).mult(sensorDist).add(this.pos);
-				// this.rightTarget = this.vel.copy().normalize().rotate(PI / 4).mult(sensorDist).add(this.pos);
-				let left = this.leftTarget.dist(home[i].pos) <= home[i].size / 2;
-				let center = this.centerTarget.dist(home[i].pos) <= home[i].size / 2;
-				let right = this.rightTarget.dist(home[i].pos) <= home[i].size / 2;
-				if (left || center || right) {
-					// if(this.state === STATES.HOME)
+				if (this.inFOV(home[i].pos, PI/2, home[i].size / 2 + sensorDist)) {
 						this.applyForce(this.seek(home[i].pos));
-					// else
-					// 	this.applyForce(this.avoid(home[i].pos));
 					if (this.pos.dist(home[i].pos) <= home[i].size / 2) {
 						this.state = STATES.SEEK;
 						this.vel.mult(-1);
@@ -412,6 +375,7 @@ class Ant {
 		}
 	}
 
+	//Рей-кастинг по стенам
 	look(walls) {
 		for (let ray of this.rays) {
 			let closest = null;
@@ -429,8 +393,6 @@ class Ant {
 			}
 			if (closest) {
 				this.applyForce(this.avoid(closest));
-				// stroke(255, 120);
-				// line(this.pos.x, this.pos.y, closest.x, closest.y);
 				fill(255, 120);
 				noStroke();
 				ellipse(closest.x, closest.y, 5);
@@ -438,6 +400,7 @@ class Ant {
 		}
 	}
 
+	//Стена поблизости
 	wallIsNear(wall) {
 		for (let ray of this.rays) {
 			let closest = null;
@@ -452,7 +415,7 @@ class Ant {
 					closest = pt;
 				}
 			}
-			if (closest && d < 100) {
+			if (closest && d < 50) {
 				fill(255);
 				noStroke();
 				circle(pt.x, pt.y, 10);
@@ -464,10 +427,10 @@ class Ant {
 		return false;
 	}
 
+	//Избегание стен
 	avoidWalls(walls) {
 		for (let i = 0; i < walls.length; i++) {
 			let predict = this.vel.copy().setMag(this.maxSpeed).add(this.pos);
-			// let predict = this.pos.copy(this.vel);
 			let a = walls[i][0].copy();
 			let b = walls[i][1].copy();
 			let normalPoint = this.getNormalPoint(predict, a, b);
@@ -476,21 +439,16 @@ class Ant {
 			let target = normalPoint.copy().add(dir);
 			let d = normalPoint.dist(predict);
 			
-			// fill(0, 0, 255);
-			// noStroke();
-			// circle(predict.x, predict.y, 10);
-			// fill(255, 0, 255);
-			// circle(target.x, target.y, 10);
 			if (d < 50 && this.wallIsNear(walls[i])) {
 				console.log('obstacle');
-				// console.log(this.pos, target);
 				stroke(255, 0, 0, 120);
 				line(this.pos.x, this.pos.y, normalPoint.x, normalPoint.y);
-				this.applyForce(this.avoid(target));
+				this.applyForce(this.avoid(target).mult(5));
 			}
 		}
 	}
 
+	//Вернуть нормаль
 	getNormalPoint(predictPos, a, b) {
 		let ap = predictPos.copy().sub(a);
 		let ab = b.copy().sub(a);
