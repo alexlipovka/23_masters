@@ -95,6 +95,7 @@ function draw() {
 	fill(50);
 	noStroke();
 
+	//ТАЙЛЫ
 	push();
 	{
 		if (isDragging) {
@@ -127,45 +128,46 @@ function draw() {
 
 	}
 	pop();
-	//AGENTS
+
+	//АГЕНТЫ
 	push();
 	{
 		translate(0, 0, 1);
 
-		rectMode(CENTER);
-		for (let a = 0; a < ants.length; a++) {
-			let x = round(ants[a].pos.x / cellSize) * cellSize;
-			let y = round(ants[a].pos.y / cellSize) * cellSize;
-			if (ants[a].state === STATES.SEEK)
-				pushStep(x, y, color(0, 5, 0, 255));
-			else if (ants[a].state === STATES.HOME)
-				pushStep(x, y, color(0, 0, 15, 255));
-		}
 		rectMode(CENTER)
 		noStroke();
-		for (let i = 0; i < steps.length; i++) {
-			fill(steps[i].color.levels[0], steps[i].color.levels[1], steps[i].color.levels[2], 50);
-			let v = (steps[i].color.levels[1] + steps[i].color.levels[2]) / 2;
+
+		//Отрисовка следов
+		steps.forEach(step => {
+			fill(step.color.levels[0], step.color.levels[1], step.color.levels[2], 50);
+			let v = (step.color.levels[1] + step.color.levels[2]) / 2;
 			let cs = map(v, 0, 255, cellSize * conf.min_step_size, cellSize * conf.max_step_size);
-			let stepPos = createVector(steps[i].x, steps[i].y);
+			let stepPos = createVector(step.x, step.y);
 			let steplat = G.latDegFromY(stepPos.y, 2, simZ);
 			let steplon = G.lonDegFromX(stepPos.x, 2, simZ);
 			let stepScreen = G.geoToScreen({ lat: steplat, lon: steplon });
 			conf.draw_circle_steps
 				? circle(stepScreen.x, stepScreen.y, cs)
 				: rect(stepScreen.x, stepScreen.y, cs);
-		}
+		});
 
-		for(let i = 0; i < food.length; i++) {
-			food[i].draw();
-		}
-		for(let i = 0; i < home.length; i++) {
-			home[i].draw();
-		}
+		//Отрисовка целей
+		food.forEach(f => {f.draw()});
 
-		// scale(1/614400, 1/614400, 1);
-		// translate(center.x, center.y);
+		//Отрисовка домиков
+		home.forEach(h => {h.draw()});
+
+		//Отрисовка агентов
 		ants.forEach(ant => {
+			//Агенты оставляют следы
+			let x = round(ant.pos.x / cellSize) * cellSize;
+			let y = round(ant.pos.y / cellSize) * cellSize;
+			if (ant.state === STATES.SEEK)
+				pushStep(x, y, color(0, 5, 0, 255));
+			else if (ant.state === STATES.HOME)
+				pushStep(x, y, color(0, 0, 15, 255));
+
+			//Сами агенты
 			ant.foundFood(food);
 			ant.reachedHome(home);
 			ant.applyFlockBehaviour(ants);
@@ -187,6 +189,7 @@ function draw() {
 			// text(`${p.x} ${p.y}`, sc.x, sc.y);
 			// text(`${sc.x} ${sc.y}`, sc.x, sc.y+16);
 		});
+
 	}
 	pop();
 
@@ -194,38 +197,41 @@ function draw() {
 	//TODO: сделать рендер текста нормальный
 	blendMode(EXCLUSION);
 	push();
-	translate(0, 0, 1);
-	let geo = G.screenToGeo();
+	{
+		translate(0, 0, 1);
+		let geo = G.screenToGeo();
 
-	fill(255);
-	let c = G.screenToGeo();
-	let m = {};
-	m.x = G.xFromLonDeg(c.x, 2, simZ);
-	m.y = G.yFromLatDeg(c.y, 2, simZ);
-	text(`${curZ} ${currentScale} ${center.x} ${center.y}`, mouseX - width / 2, mouseY - height / 2 - 8);
-	text(`${c.x} ${c.y}`, mouseX - width / 2, mouseY - height / 2 + 8);
-	text(`${m.x} ${m.y}`, mouseX - width / 2, mouseY - height / 2 + 24);
-	// text(`${Math.floor(geo.x)} ${Math.floor(geo.y)} \n\n Загружено: ${img_tiles.length} шт.`, mouseX - width / 2, mouseY - height / 2 - 5);
-	// let tileInfo = G.geoToTiles(geo.x, geo.y, curZ)
-	// text(`xTile: ${tileInfo.xTile}, yTile: ${tileInfo.yTile}, zoom: ${tileInfo.zoom}`, mouseX - width / 2, mouseY - height / 2 - 20);
-	fill(255, 0, 0);
-	noStroke();
-	circle(mouseX - width / 2, mouseY - height / 2, 6);
+		fill(255);
+		let c = G.screenToGeo();
+		let m = {};
+		m.x = G.xFromLonDeg(c.x, 2, simZ);
+		m.y = G.yFromLatDeg(c.y, 2, simZ);
+		text(`${curZ} ${currentScale} ${center.x} ${center.y}`, mouseX - width / 2, mouseY - height / 2 - 8);
+		text(`${c.x} ${c.y}`, mouseX - width / 2, mouseY - height / 2 + 8);
+		text(`${m.x} ${m.y}`, mouseX - width / 2, mouseY - height / 2 + 24);
+		fill(255, 0, 0);
+		noStroke();
+		circle(mouseX - width / 2, mouseY - height / 2, 6);
+	}
 	pop();
+
 	blendMode(BLEND);
 
 	push();
-	translate(mouseX - width / 2, mouseY - height / 2);
-	scale(currentScale, currentScale, 1);
-	translate(0, 0, 1);
-	rectMode(CENTER);
-	noFill()
-	stroke(150, 150, 200);
-	// drawingContext.setLineDash([10,5]);
-	let n = Math.pow(2, curZ);
-	rectSize = 2 / n;
-	rect(0, 0, rectSize, rectSize);
+	{
+		translate(mouseX - width / 2, mouseY - height / 2);
+		scale(currentScale, currentScale, 1);
+		translate(0, 0, 1);
+		rectMode(CENTER);
+		noFill()
+		stroke(150, 150, 200);
+		// drawingContext.setLineDash([10,5]);
+		let n = Math.pow(2, curZ);
+		rectSize = 2 / n;
+		rect(0, 0, rectSize, rectSize);
+	}
 	pop();
+
 	cleanTiles();
 	compileServersList();
 }
@@ -245,7 +251,7 @@ function windowResized() {
 }
 
 function mouseDragged() {
-	if (mouseButton === LEFT) {
+	if (mouseButton === RIGHT) {
 		let geo = G.screenToGeo();
 		// let zoom = Math.floor(random(curZ, curZ + 4));
 		getTile(G.geoToTiles(geo.x, geo.y, curZ), useServers[Math.floor(random(useServers.length))]);
@@ -258,7 +264,7 @@ function mousePressed() {
 		isDragging = true;
 		pCenter.set(mouseX, mouseY);
 	}
-	if (mouseButton === RIGHT) {
+	if (mouseButton === RIGHT && keyCode === CONTROL) {
 		let c = G.screenToGeo();
 		let m = {};
 		m.x = G.xFromLonDeg(c.x, 2, simZ);
