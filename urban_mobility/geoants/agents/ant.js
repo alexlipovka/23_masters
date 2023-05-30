@@ -39,19 +39,15 @@ class Ant {
 	run() {
 		this.update();
 		this.draw();
-		// console.log(this.pos);
 	}
 
 	draw() {
-		// fill(map(this.vel.mag(), 0, MAXSPEED, 0, 255), 0, 0);
-		// stroke(255);
 		noStroke()
 		if (this.state === STATES.SEEK) {
 			fill(0, 210, 0);
 		} else {
 			fill(0, 0, 210);
 		}
-		// this.reachedGoal ? stroke(0, 255, 0) : noStroke();
 		push();
 		{
 			translate(this.pos.x, this.pos.y);
@@ -67,9 +63,6 @@ class Ant {
 			}
 		}
 
-		// noFill();
-		// stroke(100);
-		// circle(0, 0, this.desiredSeparation);
 
 		noStroke();
 		fill(255, 0, 0);
@@ -77,10 +70,6 @@ class Ant {
 
 		pop();
 
-		// fill(0, 255, 0);
-		// circle(this.leftTarget.x, this.leftTarget.y, 4);
-		// circle(this.centerTarget.x, this.centerTarget.y, 4);
-		// circle(this.rightTarget.x, this.rightTarget.y, 4);
 
 		fill(0, 0, 255);
 		noStroke();
@@ -133,12 +122,12 @@ class Ant {
 		this.centerTarget = this.vel.copy().normalize().rotate(0).mult(sensorDist).add(this.pos);
 		this.rightTarget = this.vel.copy().normalize().rotate(sensorAngle).mult(sensorDist).add(this.pos);
 
-		let leftX = this.snapCoord(this.leftTarget.x, cellSize);// * cellSize;
-		let leftY = this.snapCoord(this.leftTarget.y, cellSize);// * cellSize;
-		let centerX = this.snapCoord(this.centerTarget.x, cellSize);// * cellSize;
-		let centerY = this.snapCoord(this.centerTarget.y, cellSize);// * cellSize;
-		let rightX = this.snapCoord(this.rightTarget.x, cellSize);// * cellSize;
-		let rightY = this.snapCoord(this.rightTarget.y, cellSize);// * cellSize;
+		let leftX = this.snapCoord(this.leftTarget.x, conf.cellSize);// * conf.cellSize;
+		let leftY = this.snapCoord(this.leftTarget.y, conf.cellSize);// * conf.cellSize;
+		let centerX = this.snapCoord(this.centerTarget.x, conf.cellSize);// * conf.cellSize;
+		let centerY = this.snapCoord(this.centerTarget.y, conf.cellSize);// * conf.cellSize;
+		let rightX = this.snapCoord(this.rightTarget.x, conf.cellSize);// * conf.cellSize;
+		let rightY = this.snapCoord(this.rightTarget.y, conf.cellSize);// * conf.cellSize;
 
 		const leftSensor = this.world.find(w => w.x === leftX && w.y === leftY);
 		const centerSensor = this.world.find(w => w.x === centerX && w.y === centerY);
@@ -272,11 +261,8 @@ class Ant {
 			sum.div(count);
 			sum.setMag(this.maxSpeed);
 			let steer = sum.sub(this.vel); //separate
-			// let steer = this.vel.copy().sub(sum); //atract
 			steer.limit(this.maxForce);
-			// this.applyForce(steer);
 			return (steer)
-			// console.log(`Force applied ${steer}`);
 		} else
 			return sum;
 	}
@@ -299,11 +285,8 @@ class Ant {
 			sum.div(count);
 			sum.setMag(this.maxSpeed);
 			let steer = sum.sub(this.vel); //separate
-			// let steer = this.vel.copy().sub(sum); //atract
 			steer.limit(this.maxForce);
-			// this.applyForce(steer);
 			return (steer);
-			// console.log(`Force applied ${steer}`);
 		}
 		else
 			return sum;
@@ -440,7 +423,7 @@ class Ant {
 			dir.setMag(this.maxSpeed*2);
 			let target = normalPoint.copy().add(dir);
 			let d = normalPoint.dist(predict);
-			
+
 			if (d < 50 && this.wallIsNear(walls[i])) {
 				console.log('obstacle');
 				stroke(255, 0, 0, 120);

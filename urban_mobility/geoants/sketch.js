@@ -17,7 +17,9 @@ let conf = {
 	draw_circle_steps: false,
 	min_step_size: 0.5,
 	max_step_size: 1,
-	use_noise_random: false
+	use_noise_random: true, //Использовать Perlin Noise вместо Random
+	cellSize: 50,
+	simZ: 22
 }
 
 let useServers = ['osm'];
@@ -54,10 +56,10 @@ let sizeT = 2;
 let ants = [];
 let food = [];
 let home = [];
-let cellSize = 50;
+// let cellSize = 50;
 let steps = [];
 let stepExtent = [new p5.Vector(0, 0), new p5.Vector(0, 0)];
-let simZ = 22;
+// let simZ = 22;
 
 
 let myFont;
@@ -83,6 +85,27 @@ function setup() {
 	for (let i = 0; i < serverNames.length; i++) {
 		serverController.add(serverNames[i], serverNames[i].name);
 	}
+	let bhvFolder = gui.addFolder('Agents');
+	bhvFolder.add(conf, 'use_separation');
+	bhvFolder.add(conf, 'val_separation', 0, 5);
+	bhvFolder.add(conf, 'use_alignment');
+	bhvFolder.add(conf, 'val_alignment', 0, 5);
+	bhvFolder.add(conf, 'use_cohesion');
+	bhvFolder.add(conf, 'val_cohesion', 0, 5);
+	bhvFolder.add(conf, 'track_steps');
+	bhvFolder.add(conf, 'val_steps', 0, 5);
+	bhvFolder.add(conf, 'obey_limits');
+	bhvFolder.add(conf, 'val_limits', 0, 5);
+	bhvFolder.add(conf, 'go_random');
+	bhvFolder.add(conf, 'val_random', 0, 5);
+	bhvFolder.add(conf, 'use_noise_random');
+	let visFolder = gui.addFolder('Visual');
+	visFolder.add(conf, 'draw_circle_steps');
+	visFolder.add(conf, 'min_step_size', 0.1, 4);
+	visFolder.add(conf, 'max_step_size', 0.1, 4);
+	let simFolder = gui.addFolder('Simulation')
+	simFolder.add(conf, 'cellSize', 10, 200);
+	simFolder.add(conf, 'simZ', 0, 24);
 }
 
 function draw() {
@@ -148,7 +171,11 @@ function drawTiles() {
 function drawAgents() {
 	//АГЕНТЫ
 	push();
-	{
+	{	
+		if (isDragging) {
+			let diff = new p5.Vector(mouseX, mouseY).sub(pCenter);
+			translate(diff.x, diff.y);
+		}
 		translate(0, 0, 1);
 
 		rectMode(CENTER)
@@ -158,10 +185,10 @@ function drawAgents() {
 		steps.forEach(step => {
 			fill(step.color.levels[0], step.color.levels[1], step.color.levels[2], 50);
 			let v = (step.color.levels[1] + step.color.levels[2]) / 2;
-			let cs = map(v, 0, 255, cellSize * conf.min_step_size, cellSize * conf.max_step_size);
+			let cs = map(v, 0, 255, conf.cellSize * conf.min_step_size, conf.cellSize * conf.max_step_size);
 			let stepPos = createVector(step.x, step.y);
-			let steplat = G.latDegFromY(stepPos.y, 2, simZ);
-			let steplon = G.lonDegFromX(stepPos.x, 2, simZ);
+			let steplat = G.latDegFromY(stepPos.y, 2, conf.simZ);
+			let steplon = G.lonDegFromX(stepPos.x, 2, conf.simZ);
 			let stepScreen = G.geoToScreen({ lat: steplat, lon: steplon });
 			conf.draw_circle_steps
 				? circle(stepScreen.x, stepScreen.y, cs)
@@ -177,8 +204,8 @@ function drawAgents() {
 		//Отрисовка агентов
 		ants.forEach(ant => {
 			//Агенты оставляют следы
-			let x = round(ant.pos.x / cellSize) * cellSize;
-			let y = round(ant.pos.y / cellSize) * cellSize;
+			let x = round(ant.pos.x / conf.cellSize) * conf.cellSize;
+			let y = round(ant.pos.y / conf.cellSize) * conf.cellSize;
 			if (ant.state === STATES.SEEK)
 				pushStep(x, y, color(0, 5, 0, 255));
 			else if (ant.state === STATES.HOME)
@@ -194,8 +221,8 @@ function drawAgents() {
 			ant.update();
 			let p = ant.pos.copy();
 			// console.log(p.x, p.y);
-			let plat = G.latDegFromY(p.y, 2, simZ);
-			let plon = G.lonDegFromX(p.x, 2, simZ);
+			let plat = G.latDegFromY(p.y, 2, conf.simZ);
+			let plon = G.lonDegFromX(p.x, 2, conf.simZ);
 			// console.log(plat, plon);
 			// console.log(G.geoToScreen({lat: plat, lon: plon}));
 			let sc = G.geoToScreen({ lat: plat, lon: plon });
@@ -240,8 +267,8 @@ function drawInfoText() {
 		fill(255);
 		let c = G.screenToGeo();
 		let m = {};
-		m.x = G.xFromLonDeg(c.x, 2, simZ);
-		m.y = G.yFromLatDeg(c.y, 2, simZ);
+		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
+		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
 		text(`${curZ} ${currentScale} ${center.x} ${center.y}`, mouseX - width / 2, mouseY - height / 2 - 8);
 		text(`${c.x} ${c.y}`, mouseX - width / 2, mouseY - height / 2 + 8);
 		text(`${m.x} ${m.y}`, mouseX - width / 2, mouseY - height / 2 + 24);
@@ -271,7 +298,6 @@ function windowResized() {
 function mouseDragged() {
 	if (mouseButton === RIGHT) {
 		let geo = G.screenToGeo();
-		// let zoom = Math.floor(random(curZ, curZ + 4));
 		getTile(G.geoToTiles(geo.x, geo.y, curZ), useServers[Math.floor(random(useServers.length))]);
 	}
 
@@ -285,22 +311,22 @@ function mousePressed() {
 	if (mouseButton === RIGHT && keyCode === CONTROL) {
 		let c = G.screenToGeo();
 		let m = {};
-		m.x = G.xFromLonDeg(c.x, 2, simZ);
-		m.y = G.yFromLatDeg(c.y, 2, simZ);
+		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
+		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
 		ants.push(new Ant(createVector(m.x, m.y), [], []));
 	}
 	if (mouseButton === LEFT && keyCode === CONTROL) {
 		let c = G.screenToGeo();
 		let m = {};
-		m.x = G.xFromLonDeg(c.x, 2, simZ);
-		m.y = G.yFromLatDeg(c.y, 2, simZ);
+		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
+		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
 		food.push(new Food(createVector(m.x, m.y), 20));
 		console.log('food add');
 	} else if (mouseButton === LEFT && keyCode === ALT) {
 		let c = G.screenToGeo();
 		let m = {};
-		m.x = G.xFromLonDeg(c.x, 2, simZ);
-		m.y = G.yFromLatDeg(c.y, 2, simZ);
+		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
+		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
 		home.push(new Home(createVector(m.x, m.y), 30));
 		for (let ant in ants) {
 			ant.home = home[home.length - 1];
@@ -309,8 +335,8 @@ function mousePressed() {
 	} else if (mouseButton === LEFT && keyCode === SHIFT) {
 		let c = G.screenToGeo();
 		let m = {};
-		m.x = G.xFromLonDeg(c.x, 2, simZ);
-		m.y = G.yFromLatDeg(c.y, 2, simZ);
+		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
+		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
 		let coord = s2w(createVector(m.x, m.y));
 		for (let i = 0; i < food.length; i++) {
 			if (coord.dist(food[i].pos) < food[i].size) {

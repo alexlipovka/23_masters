@@ -7,8 +7,8 @@ class Food {
 	draw() {
 		fill(0, 0, 255, 120);
 		noStroke();
-		let plat = G.latDegFromY(this.pos.y, 2, simZ);
-		let plon = G.lonDegFromX(this.pos.x, 2, simZ);
+		let plat = G.latDegFromY(this.pos.y, 2, conf.simZ);
+		let plon = G.lonDegFromX(this.pos.x, 2, conf.simZ);
 		// console.log(plat, plon);
 		// console.log(G.geoToScreen({lat: plat, lon: plon}));
 		let sc = G.geoToScreen({ lat: plat, lon: plon });
@@ -33,8 +33,8 @@ class Home {
 
 		// let p = ant.pos.copy();
 		// console.log(p.x, p.y);
-		let plat = G.latDegFromY(this.pos.y, 2, simZ);
-		let plon = G.lonDegFromX(this.pos.x, 2, simZ);
+		let plat = G.latDegFromY(this.pos.y, 2, conf.simZ);
+		let plon = G.lonDegFromX(this.pos.x, 2, conf.simZ);
 		// console.log(plat, plon);
 		// console.log(G.geoToScreen({lat: plat, lon: plon}));
 		let sc = G.geoToScreen({ lat: plat, lon: plon });

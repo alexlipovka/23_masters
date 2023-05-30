@@ -12,10 +12,10 @@ function pushStep(x, y, pushColor) {
 		}
 	}
 	steps.push({ 'x': x, 'y': y, 'color': color(pushColor.levels[0], pushColor.levels[1], pushColor.levels[2], 255) });
-	stepExtent[0].x = min(x - cellSize / 2, stepExtent[0].x);
-	stepExtent[0].y = min(y - cellSize / 2, stepExtent[0].y);
-	stepExtent[1].x = max(x + cellSize / 2, stepExtent[1].x);
-	stepExtent[1].y = max(y + cellSize / 2, stepExtent[1].y);
+	stepExtent[0].x = min(x - conf.cellSize / 2, stepExtent[0].x);
+	stepExtent[0].y = min(y - conf.cellSize / 2, stepExtent[0].y);
+	stepExtent[1].x = max(x + conf.cellSize / 2, stepExtent[1].x);
+	stepExtent[1].y = max(y + conf.cellSize / 2, stepExtent[1].y);
 	// console.log(steps);
 }
 
