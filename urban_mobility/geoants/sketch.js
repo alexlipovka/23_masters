@@ -87,14 +87,29 @@ function setup() {
 
 function draw() {
 	background(100);
+
 	if (frameCount % 10 === 0)
 		fadeSteps();
+
 	textFont(myFont);
 	textSize(14);
-
 	fill(50);
 	noStroke();
 
+	//Тайлы
+	drawTiles();
+	//Агенты
+	drawAgents();
+	//Инфотекст
+	drawInfoText();
+	//Курсор
+	drawCursor();
+
+	cleanTiles();
+	compileServersList();
+}
+
+function drawTiles() {
 	//ТАЙЛЫ
 	push();
 	{
@@ -128,7 +143,9 @@ function draw() {
 
 	}
 	pop();
+}
 
+function drawAgents() {
 	//АГЕНТЫ
 	push();
 	{
@@ -192,7 +209,26 @@ function draw() {
 
 	}
 	pop();
+}
 
+function drawCursor() {
+	push();
+	{
+		translate(mouseX - width / 2, mouseY - height / 2);
+		scale(currentScale, currentScale, 1);
+		translate(0, 0, 1);
+		rectMode(CENTER);
+		noFill()
+		stroke(150, 150, 200);
+		// drawingContext.setLineDash([10,5]);
+		let n = Math.pow(2, curZ);
+		rectSize = 2 / n;
+		rect(0, 0, rectSize, rectSize);
+	}
+	pop();
+}
+
+function drawInfoText() {
 	//TEXT OUT
 	//TODO: сделать рендер текста нормальный
 	blendMode(EXCLUSION);
@@ -216,24 +252,6 @@ function draw() {
 	pop();
 
 	blendMode(BLEND);
-
-	push();
-	{
-		translate(mouseX - width / 2, mouseY - height / 2);
-		scale(currentScale, currentScale, 1);
-		translate(0, 0, 1);
-		rectMode(CENTER);
-		noFill()
-		stroke(150, 150, 200);
-		// drawingContext.setLineDash([10,5]);
-		let n = Math.pow(2, curZ);
-		rectSize = 2 / n;
-		rect(0, 0, rectSize, rectSize);
-	}
-	pop();
-
-	cleanTiles();
-	compileServersList();
 }
 
 
