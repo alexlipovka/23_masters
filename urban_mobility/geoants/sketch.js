@@ -1,3 +1,25 @@
+let conf = {
+	drawGeoGrid: true,
+	drawTileGrid: false,
+
+	use_separation: false,
+	use_alignment: false,
+	use_cohesion: false,
+	track_steps: true,
+	obey_limits: true,
+	go_random: true,
+	val_separation: 0.5,
+	val_alignment: 0.5,
+	val_cohesion: 0.5,
+	val_steps: 3.0,
+	val_limits: 2.0,
+	val_random: 1.0,
+	draw_circle_steps: false,
+	min_step_size: 0.5,
+	max_step_size: 1,
+	use_noise_random: false
+}
+
 let useServers = ['osm'];
 
 class Tile {
@@ -28,12 +50,19 @@ let center;
 let pCenter;
 let sizeT = 2;
 
+//AGENTS
+let ants = [];
+let food = [];
+let home = [];
+let cellSize = 50;
+let steps = [];
+let stepExtent = [new p5.Vector(0, 0), new p5.Vector(0, 0)];
+let simZ = 22;
+
+
 let myFont;
 
-let conf = {
-	drawGeoGrid: true,
-	drawTileGrid: false,
-}
+
 
 var gui;
 
@@ -42,6 +71,8 @@ function preload() {
 }
 
 function setup() {
+	document.addEventListener('contextmenu', event => event.preventDefault());
+
 	createCanvas(windowWidth, windowHeight, WEBGL);
 	ortho();
 	// center = new p5.Vector(width / 2, height / 2);
@@ -56,6 +87,10 @@ function setup() {
 
 function draw() {
 	background(100);
+	if (frameCount % 10 === 0)
+		fadeSteps();
+	textFont(myFont);
+	textSize(14);
 
 	fill(50);
 	noStroke();
@@ -89,9 +124,71 @@ function draw() {
 		//Сетка тайлов
 		if (conf.drawTileGrid)
 			drawTileGrid();
+
 	}
 	pop();
+	//AGENTS
+	push();
+	{
+		translate(0, 0, 1);
 
+		rectMode(CENTER);
+		for (let a = 0; a < ants.length; a++) {
+			let x = round(ants[a].pos.x / cellSize) * cellSize;
+			let y = round(ants[a].pos.y / cellSize) * cellSize;
+			if (ants[a].state === STATES.SEEK)
+				pushStep(x, y, color(0, 5, 0, 255));
+			else if (ants[a].state === STATES.HOME)
+				pushStep(x, y, color(0, 0, 15, 255));
+		}
+		rectMode(CENTER)
+		noStroke();
+		for (let i = 0; i < steps.length; i++) {
+			fill(steps[i].color.levels[0], steps[i].color.levels[1], steps[i].color.levels[2], 50);
+			let v = (steps[i].color.levels[1] + steps[i].color.levels[2]) / 2;
+			let cs = map(v, 0, 255, cellSize * conf.min_step_size, cellSize * conf.max_step_size);
+			let stepPos = createVector(steps[i].x, steps[i].y);
+			let steplat = G.latDegFromY(stepPos.y, 2, simZ);
+			let steplon = G.lonDegFromX(stepPos.x, 2, simZ);
+			let stepScreen = G.geoToScreen({ lat: steplat, lon: steplon });
+			conf.draw_circle_steps
+				? circle(stepScreen.x, stepScreen.y, cs)
+				: rect(stepScreen.x, stepScreen.y, cs);
+		}
+
+		for(let i = 0; i < food.length; i++) {
+			food[i].draw();
+		}
+		for(let i = 0; i < home.length; i++) {
+			home[i].draw();
+		}
+
+		// scale(1/614400, 1/614400, 1);
+		// translate(center.x, center.y);
+		ants.forEach(ant => {
+			ant.foundFood(food);
+			ant.reachedHome(home);
+			ant.applyFlockBehaviour(ants);
+			// ant.avoidWalls(walls);
+			// console.log(ant.pos.x);
+			// ant.run();
+			ant.update();
+			let p = ant.pos.copy();
+			// console.log(p.x, p.y);
+			let plat = G.latDegFromY(p.y, 2, simZ);
+			let plon = G.lonDegFromX(p.x, 2, simZ);
+			// console.log(plat, plon);
+			// console.log(G.geoToScreen({lat: plat, lon: plon}));
+			let sc = G.geoToScreen({ lat: plat, lon: plon });
+			fill(255);
+			noStroke();
+			circle(sc.x, sc.y, 10);
+			fill(0);
+			// text(`${p.x} ${p.y}`, sc.x, sc.y);
+			// text(`${sc.x} ${sc.y}`, sc.x, sc.y+16);
+		});
+	}
+	pop();
 
 	//TEXT OUT
 	//TODO: сделать рендер текста нормальный
@@ -99,13 +196,12 @@ function draw() {
 	push();
 	translate(0, 0, 1);
 	let geo = G.screenToGeo();
-	textFont(myFont);
-	textSize(14);
+
 	fill(255);
 	let c = G.screenToGeo();
 	let m = {};
-	m.x = G.xFromLonDeg(c.x, 2, 24);
-	m.y = G.yFromLatDeg(c.y, 2, 24);
+	m.x = G.xFromLonDeg(c.x, 2, simZ);
+	m.y = G.yFromLatDeg(c.y, 2, simZ);
 	text(`${curZ} ${currentScale} ${center.x} ${center.y}`, mouseX - width / 2, mouseY - height / 2 - 8);
 	text(`${c.x} ${c.y}`, mouseX - width / 2, mouseY - height / 2 + 8);
 	text(`${m.x} ${m.y}`, mouseX - width / 2, mouseY - height / 2 + 24);
@@ -162,7 +258,43 @@ function mousePressed() {
 		isDragging = true;
 		pCenter.set(mouseX, mouseY);
 	}
-
+	if (mouseButton === RIGHT) {
+		let c = G.screenToGeo();
+		let m = {};
+		m.x = G.xFromLonDeg(c.x, 2, simZ);
+		m.y = G.yFromLatDeg(c.y, 2, simZ);
+		ants.push(new Ant(createVector(m.x, m.y), [], []));
+	}
+	if (mouseButton === LEFT && keyCode === CONTROL) {
+		let c = G.screenToGeo();
+		let m = {};
+		m.x = G.xFromLonDeg(c.x, 2, simZ);
+		m.y = G.yFromLatDeg(c.y, 2, simZ);
+		food.push(new Food(createVector(m.x, m.y), 20));
+		console.log('food add');
+	} else if (mouseButton === LEFT && keyCode === ALT) {
+		let c = G.screenToGeo();
+		let m = {};
+		m.x = G.xFromLonDeg(c.x, 2, simZ);
+		m.y = G.yFromLatDeg(c.y, 2, simZ);
+		home.push(new Home(createVector(m.x, m.y), 30));
+		for (let ant in ants) {
+			ant.home = home[home.length - 1];
+		}
+		console.log('home add');
+	} else if (mouseButton === LEFT && keyCode === SHIFT) {
+		let c = G.screenToGeo();
+		let m = {};
+		m.x = G.xFromLonDeg(c.x, 2, simZ);
+		m.y = G.yFromLatDeg(c.y, 2, simZ);
+		let coord = s2w(createVector(m.x, m.y));
+		for (let i = 0; i < food.length; i++) {
+			if (coord.dist(food[i].pos) < food[i].size) {
+				food.splice(i, 1);
+				i--;
+			}
+		}
+	}
 }
 
 function mouseReleased() {

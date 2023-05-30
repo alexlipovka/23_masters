@@ -1,5 +1,5 @@
 const WAIT = 50;
-const MAXSPEED = 25;
+const MAXSPEED = 5;
 const STATES = {
 	'HOME': 0,
 	'SEEK': 1,
@@ -39,6 +39,7 @@ class Ant {
 	run() {
 		this.update();
 		this.draw();
+		// console.log(this.pos);
 	}
 
 	draw() {
@@ -185,6 +186,7 @@ class Ant {
 
 	//Сложное движение, комбинация
 	applyFlockBehaviour(others) {
+		console.log('flocking');
 		let sep = this.separation(others);	//разделение
 		let ali = this.alignment(others);		//выравнивание
 		let coh = this.cohesion(others);		//группирование
@@ -197,7 +199,7 @@ class Ant {
 		ali.mult(0.5);
 		coh.mult(0.5);
 		step.mult(1.0);
-		lim.mult(2.0);
+		lim.mult(0.0);
 		rnd.mult(1.0);
 		h.mult(0.2);
 

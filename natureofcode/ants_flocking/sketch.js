@@ -184,7 +184,6 @@ function draw() {
 				pushStep(x, y, color(0, 5, 0, 255));
 			else if(ants[a].state === STATES.HOME)
 				pushStep(x, y, color(0, 0, 15, 255));
-
 		}
 
 

@@ -67,6 +67,18 @@ class Geo {
 		y = this.rad2deg(y);
 		return { x, y };
 	}
+
+	geoToScreen({lat, lon}) {
+		// console.log(lon, lat);
+		let x = this.xFromLonDeg(lon);
+		let y = this.yFromLatDeg(lat);
+		let pos = createVector(x, y);
+		pos.sub(createVector(1,1));
+		pos.mult(currentScale);
+		pos.add(center);
+
+		return pos;
+	}
 }
 
 let G = new Geo();
