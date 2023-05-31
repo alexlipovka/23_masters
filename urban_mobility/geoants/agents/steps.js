@@ -35,3 +35,16 @@ function fadeSteps() {
 		}
 	}
 }
+
+function closestStep(a, thres = 70) {
+	let d = Infinity;
+	let closestS = undefined;
+	steps.forEach(s => {
+		let di = a.dist(createVector(s.x, s.y));
+		if(di < d && di < thres) {
+			closestS = s;
+		}
+	});
+	// console.log(closestS);
+	return closestS;
+}

@@ -14,6 +14,7 @@ let conf = {
 	val_steps: 3.0,
 	val_limits: 2.0,
 	val_random: 1.0,
+	val_home: 0.2,
 	draw_circle_steps: false,
 	min_step_size: 1,
 	max_step_size: 1,
@@ -102,6 +103,7 @@ function setup() {
 	bhvFolder.add(conf, 'val_limits', 0, 5);
 	bhvFolder.add(conf, 'go_random');
 	bhvFolder.add(conf, 'val_random', 0, 5);
+	bhvFolder.add(conf, 'val_home', 0, 5);
 	bhvFolder.add(conf, 'use_noise_random');
 	let visFolder = gui.addFolder('Visual');
 	visFolder.add(conf, 'draw_circle_steps');
@@ -213,7 +215,7 @@ function drawAgents() {
 			let x = round(ant.pos.x / conf.cellSize) * conf.cellSize;
 			let y = round(ant.pos.y / conf.cellSize) * conf.cellSize;
 			if (ant.state === STATES.SEEK)
-				pushStep(x, y, color(0, 5, 0, 255));
+				pushStep(x, y, color(0, 15, 0, 255));
 			else if (ant.state === STATES.HOME)
 				pushStep(x, y, color(0, 0, 15, 255));
 
@@ -229,9 +231,9 @@ function drawAgents() {
 			let plat = G.latDegFromY(p.y, 2, conf.simZ);
 			let plon = G.lonDegFromX(p.x, 2, conf.simZ);
 			let sc = G.geoToScreen({ lat: plat, lon: plon });
-			fill(255);
-			noStroke();
-			circle(sc.x, sc.y, 10);
+			// fill(255);
+			// noStroke();
+			// circle(sc.x, sc.y, 10);
 			push();
 			translate(sc.x, sc.y);
 			ant.draw();
@@ -320,7 +322,7 @@ function mousePressed() {
 		let m = {};
 		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
 		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
-		ants.push(new Ant(createVector(m.x, m.y), [], []));
+		ants.push(new Ant(createVector(m.x, m.y), steps, home));
 	}
 	if (mouseButton === LEFT && keyCode === CONTROL && keyIsPressed) {
 		let c = G.screenToGeo();
