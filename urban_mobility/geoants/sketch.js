@@ -15,11 +15,12 @@ let conf = {
 	val_limits: 2.0,
 	val_random: 1.0,
 	draw_circle_steps: false,
-	min_step_size: 0.5,
+	min_step_size: 1,
 	max_step_size: 1,
-	use_noise_random: true, //Использовать Perlin Noise вместо Random
+	use_noise_random: false, //Использовать Perlin Noise вместо Random
 	cellSize: 50,
-	simZ: 22
+	simZ: 22,
+	walkDistance: 2000
 }
 
 let useServers = ['osm'];
@@ -45,7 +46,7 @@ let img_tiles = [];
 let tile_queue = [];
 
 let Rearth = 6378137.;
-let currentScale = 614400;
+let currentScale = 600000; //614400;
 let curZ = 11;
 let isDragging = false;
 let center;
@@ -78,7 +79,7 @@ function setup() {
 	createCanvas(windowWidth, windowHeight, WEBGL);
 	ortho();
 	// center = new p5.Vector(width / 2, height / 2);
-	center = new p5.Vector(-317108, 231847);
+	center = new p5.Vector(-309544, 226360);
 	pCenter = center.copy();
 	gui = new dat.GUI();
 	let serverController = gui.addFolder('Servers');
@@ -106,6 +107,7 @@ function setup() {
 	let simFolder = gui.addFolder('Simulation')
 	simFolder.add(conf, 'cellSize', 10, 200);
 	simFolder.add(conf, 'simZ', 0, 24);
+	simFolder.add(conf, 'walkDistance', 100, 10000);
 }
 
 function draw() {
@@ -183,9 +185,10 @@ function drawAgents() {
 
 		//Отрисовка следов
 		steps.forEach(step => {
-			fill(step.color.levels[0], step.color.levels[1], step.color.levels[2], 50);
+			fill(step.color.levels[0], step.color.levels[1], step.color.levels[2], 100);
 			let v = (step.color.levels[1] + step.color.levels[2]) / 2;
 			let cs = map(v, 0, 255, conf.cellSize * conf.min_step_size, conf.cellSize * conf.max_step_size);
+			cs /= 600000/currentScale*7; //?! почему именно  7 ?!
 			let stepPos = createVector(step.x, step.y);
 			let steplat = G.latDegFromY(stepPos.y, 2, conf.simZ);
 			let steplon = G.lonDegFromX(stepPos.x, 2, conf.simZ);
@@ -220,15 +223,16 @@ function drawAgents() {
 			// ant.run();
 			ant.update();
 			let p = ant.pos.copy();
-			// console.log(p.x, p.y);
 			let plat = G.latDegFromY(p.y, 2, conf.simZ);
 			let plon = G.lonDegFromX(p.x, 2, conf.simZ);
-			// console.log(plat, plon);
-			// console.log(G.geoToScreen({lat: plat, lon: plon}));
 			let sc = G.geoToScreen({ lat: plat, lon: plon });
 			fill(255);
 			noStroke();
 			circle(sc.x, sc.y, 10);
+			push();
+			translate(sc.x, sc.y);
+			ant.draw();
+			pop();
 			fill(0);
 			// text(`${p.x} ${p.y}`, sc.x, sc.y);
 			// text(`${sc.x} ${sc.y}`, sc.x, sc.y+16);
@@ -308,36 +312,36 @@ function mousePressed() {
 		isDragging = true;
 		pCenter.set(mouseX, mouseY);
 	}
-	if (mouseButton === RIGHT && keyCode === CONTROL) {
+	if (mouseButton === RIGHT && keyCode === CONTROL && keyIsPressed) {
 		let c = G.screenToGeo();
 		let m = {};
 		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
 		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
 		ants.push(new Ant(createVector(m.x, m.y), [], []));
 	}
-	if (mouseButton === LEFT && keyCode === CONTROL) {
+	if (mouseButton === LEFT && keyCode === CONTROL && keyIsPressed) {
 		let c = G.screenToGeo();
 		let m = {};
 		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
 		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
-		food.push(new Food(createVector(m.x, m.y), 20));
+		food.push(new Food(createVector(m.x, m.y), 500));
 		console.log('food add');
-	} else if (mouseButton === LEFT && keyCode === ALT) {
+	} else if (mouseButton === LEFT && keyCode === ALT && keyIsPressed) {
 		let c = G.screenToGeo();
 		let m = {};
 		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
 		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
-		home.push(new Home(createVector(m.x, m.y), 30));
+		home.push(new Home(createVector(m.x, m.y), 300));
 		for (let ant in ants) {
 			ant.home = home[home.length - 1];
 		}
 		console.log('home add');
-	} else if (mouseButton === LEFT && keyCode === SHIFT) {
+	} else if (mouseButton === LEFT && keyCode === SHIFT && keyIsPressed) {
 		let c = G.screenToGeo();
 		let m = {};
 		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
 		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
-		let coord = s2w(createVector(m.x, m.y));
+		let coord = createVector(m.x, m.y);
 		for (let i = 0; i < food.length; i++) {
 			if (coord.dist(food[i].pos) < food[i].size) {
 				food.splice(i, 1);

@@ -18,6 +18,9 @@
   - [2_attractor_datGUI](./natureofcode/2_attractor_datGUI) — Вместо общего поля вводим аттрактор и интерфейс на dat.GUI
   - [3_particleSystems](./natureofcode/3_particleSystems)
   - [4_vehicles](./natureofcode/4_vehicles)
+  - [ants_seek_n_arrive](./ants_seek_n_arrive) — Агенты следят за курсором и возвращаются домой
+  - [ants_wander](./ants_wander) — Агенты свободно исследуют пространство
+  - [ants_flocking](./ants_flocking) — Основа агентного моделирования
 
 ## Загрузка сторонних геоданных
 
@@ -39,7 +42,11 @@
 ### Самостоятельная загрузка тайлов с WMTS-серверов
 
 - [Lite-map](https://github.com/alexlipovka/23_masters/tree/main/lite-map)
-  - [Tile Mosaic](./lite-map/custom_map)		
+  - [Tile Mosaic](./lite-map/custom_map)
+
+## Проекты
+
+- [GeoAnts](./urban_mobility/geoants/) — Агентное моделирование с геопривязкой
 
 ## Установка внешних библиотек
 

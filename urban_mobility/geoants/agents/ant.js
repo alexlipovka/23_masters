@@ -1,5 +1,5 @@
 const WAIT = 50;
-const MAXSPEED = 5;
+const MAXSPEED = 15;
 const STATES = {
 	'HOME': 0,
 	'SEEK': 1,
@@ -50,7 +50,7 @@ class Ant {
 		}
 		push();
 		{
-			translate(this.pos.x, this.pos.y);
+			// translate(this.pos.x, this.pos.y);
 			rotate(this.vel.heading());
 			beginShape();
 			vertex(-10, -8);
@@ -122,12 +122,12 @@ class Ant {
 		this.centerTarget = this.vel.copy().normalize().rotate(0).mult(sensorDist).add(this.pos);
 		this.rightTarget = this.vel.copy().normalize().rotate(sensorAngle).mult(sensorDist).add(this.pos);
 
-		let leftX = this.snapCoord(this.leftTarget.x, conf.cellSize);// * conf.cellSize;
-		let leftY = this.snapCoord(this.leftTarget.y, conf.cellSize);// * conf.cellSize;
-		let centerX = this.snapCoord(this.centerTarget.x, conf.cellSize);// * conf.cellSize;
-		let centerY = this.snapCoord(this.centerTarget.y, conf.cellSize);// * conf.cellSize;
-		let rightX = this.snapCoord(this.rightTarget.x, conf.cellSize);// * conf.cellSize;
-		let rightY = this.snapCoord(this.rightTarget.y, conf.cellSize);// * conf.cellSize;
+		let leftX = this.snapCoord(this.leftTarget.x, conf.cellSize);
+		let leftY = this.snapCoord(this.leftTarget.y, conf.cellSize);
+		let centerX = this.snapCoord(this.centerTarget.x, conf.cellSize);
+		let centerY = this.snapCoord(this.centerTarget.y, conf.cellSize);
+		let rightX = this.snapCoord(this.rightTarget.x, conf.cellSize);
+		let rightY = this.snapCoord(this.rightTarget.y, conf.cellSize);
 
 		const leftSensor = this.world.find(w => w.x === leftX && w.y === leftY);
 		const centerSensor = this.world.find(w => w.x === centerX && w.y === centerY);
@@ -180,7 +180,8 @@ class Ant {
 		let ali = this.alignment(others);		//выравнивание
 		let coh = this.cohesion(others);		//группирование
 		let step = this.trackSteps();				//движение по следу
-		let lim = this.limits();						//соблюдение границ
+		// let lim = this.limits();						//соблюдение границ
+		let lim = this.dontWalkTooFar();						//соблюдение границ
 		let rnd = this.chooseRandomDir();		//случайное движение
 		let h = this.seek(this.home);				//возвращение домой
 
@@ -188,7 +189,7 @@ class Ant {
 		ali.mult(0.5);
 		coh.mult(0.5);
 		step.mult(1.0);
-		lim.mult(0.0);
+		lim.mult(1.0);
 		rnd.mult(1.0);
 		h.mult(0.2);
 
@@ -221,6 +222,17 @@ class Ant {
 		steer.limit(this.maxForce);
 		return (steer);
 
+	}
+
+	dontWalkTooFar() {
+		let far = conf.walkDistance;
+		if(this.pos.dist(this.home) > far) {
+			let steer = this.home.copy().sub(this.pos);
+			return steer;
+		}
+		else {
+			return createVector(0,0);
+		}
 	}
 
 	//Поиск цели
@@ -332,7 +344,7 @@ class Ant {
 					this.applyForce(this.seek(food[i].pos));
 					if (this.pos.dist(food[i].pos) <= food[i].size / 2) {
 						food[i].eat();
-						if(food[i].size < 50) {
+						if(food[i].size < 5) {
 							food.splice(i, 1);
 							i--;
 						}

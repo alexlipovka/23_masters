@@ -12,8 +12,8 @@ class Food {
 		// console.log(plat, plon);
 		// console.log(G.geoToScreen({lat: plat, lon: plon}));
 		let sc = G.geoToScreen({ lat: plat, lon: plon });
-
-		circle(sc.x, sc.y, this.size);
+		let size = this.size / (614400/currentScale*6.85);
+		circle(sc.x, sc.y, size);
 	}
 
 	eat() {
@@ -38,7 +38,7 @@ class Home {
 		// console.log(plat, plon);
 		// console.log(G.geoToScreen({lat: plat, lon: plon}));
 		let sc = G.geoToScreen({ lat: plat, lon: plon });
-
-		circle(sc.x, sc.y, this.size);
+		let size = this.size / (614400/currentScale*6.85);
+		circle(sc.x, sc.y, size);
 	}
 }
