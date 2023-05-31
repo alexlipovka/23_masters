@@ -279,7 +279,11 @@ class Ant {
 		step.mult(conf.val_steps);
 		lim.mult(conf.val_limits);
 		rnd.mult(conf.val_random);
-		h.mult(conf.val_home);
+		if(this.state === STATES.HOME) {
+			h.mult(1.5);
+		} else {
+			h.mult(conf.val_home);
+		}
 
 
 		if (conf.use_separation) this.applyForce(sep);

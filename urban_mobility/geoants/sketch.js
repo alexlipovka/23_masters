@@ -11,17 +11,17 @@ let conf = {
 	val_separation: 0.5,
 	val_alignment: 0.5,
 	val_cohesion: 0.5,
-	val_steps: 3.0,
+	val_steps: 1.5,
 	val_limits: 2.0,
 	val_random: 1.0,
-	val_home: 0.2,
+	val_home: 0.5,
 	draw_circle_steps: false,
 	min_step_size: 1,
 	max_step_size: 1,
 	use_noise_random: false, //Использовать Perlin Noise вместо Random
 	cellSize: 50,
 	simZ: 22,
-	walkDistance: 2000
+	walkDistance: 4000
 }
 
 let useServers = ['osm'];
@@ -118,7 +118,7 @@ function setup() {
 function draw() {
 	background(100);
 
-	if (frameCount % 10 === 0)
+	if (frameCount % 100 === 0)
 		fadeSteps();
 
 	textFont(myFont);
