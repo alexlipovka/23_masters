@@ -279,8 +279,8 @@ function drawInfoText() {
 		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
 		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
 		text(`${curZ} ${currentScale} ${center.x} ${center.y}`, mouseX - width / 2, mouseY - height / 2 - 8);
-		text(`${c.x} ${c.y}`, mouseX - width / 2, mouseY - height / 2 + 8);
-		text(`${m.x} ${m.y}`, mouseX - width / 2, mouseY - height / 2 + 24);
+		text(`${round(c.x, 6)} ${round(c.y, 6)}`, mouseX - width / 2, mouseY - height / 2 + 26);
+		// text(`${m.x} ${m.y}`, mouseX - width / 2, mouseY - height / 2 + 24);
 		fill(255, 0, 0);
 		noStroke();
 		circle(mouseX - width / 2, mouseY - height / 2, 6);
