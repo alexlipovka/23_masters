@@ -65,6 +65,9 @@ let stepExtent = [new p5.Vector(0, 0), new p5.Vector(0, 0)];
 
 let myFont;
 
+//
+let shiftKeyDown = false;
+
 
 
 var gui;
@@ -173,7 +176,7 @@ function drawTiles() {
 function drawAgents() {
 	//АГЕНТЫ
 	push();
-	{	
+	{
 		if (isDragging) {
 			let diff = new p5.Vector(mouseX, mouseY).sub(pCenter);
 			translate(diff.x, diff.y);
@@ -188,7 +191,7 @@ function drawAgents() {
 			fill(step.color.levels[0], step.color.levels[1], step.color.levels[2], 100);
 			let v = (step.color.levels[1] + step.color.levels[2]) / 2;
 			let cs = map(v, 0, 255, conf.cellSize * conf.min_step_size, conf.cellSize * conf.max_step_size);
-			cs /= 600000/currentScale*7; //?! почему именно  7 ?!
+			cs /= 600000 / currentScale * 7; //?! почему именно  7 ?!
 			let stepPos = createVector(step.x, step.y);
 			let steplat = G.latDegFromY(stepPos.y, 2, conf.simZ);
 			let steplon = G.lonDegFromX(stepPos.x, 2, conf.simZ);
@@ -199,10 +202,10 @@ function drawAgents() {
 		});
 
 		//Отрисовка целей
-		food.forEach(f => {f.draw()});
+		food.forEach(f => { f.draw() });
 
 		//Отрисовка домиков
-		home.forEach(h => {h.draw()});
+		home.forEach(h => { h.draw() });
 
 		//Отрисовка агентов
 		ants.forEach(ant => {
@@ -361,18 +364,34 @@ function mouseReleased() {
 }
 
 function mouseWheel(event) {
+	if(shiftKeyDown === true)
+		console.log('key');
+	if(shiftKeyDown === false)
+		console.log('no key');
 	if (event.delta < 0) {
-		let diff = new p5.Vector(mouseX - width / 2, mouseY - height / 2).sub(center);
-		diff.mult(0.5);
-		center.add(diff);
+		if (!shiftKeyDown) {
+			console.log('zoom out');
+			let diff = new p5.Vector(mouseX - width / 2, mouseY - height / 2).sub(center);
+			diff.mult(0.5);
+			center.add(diff);
+		} else {
+			curZ += 1;
+		}
 	}
 	else {
-		let diff = new p5.Vector(mouseX - width / 2, mouseY - height / 2).sub(center);
-		diff.mult(1);
-		center.sub(diff);
+		if (!shiftKeyDown) {
+			console.log('zoom in');
+			let diff = new p5.Vector(mouseX - width / 2, mouseY - height / 2).sub(center);
+			diff.mult(1);
+			center.sub(diff);
+		} else {
+			curZ -= 1;
+		}
 	}
 	// let diff = center.sub(new p5.Vector(mouseX, mouseY));
-	currentScale *= event.delta > 0 ? 2 : 0.5;
+	if (!shiftKeyDown) {
+		currentScale *= event.delta > 0 ? 2 : 0.5;
+	}
 }
 
 function keyPressed() {
@@ -389,4 +408,10 @@ function keyPressed() {
 		conf.drawTileGrid = !conf.drawTileGrid
 	}
 	// console.log(key);
+	if(keyCode === SHIFT)
+		shiftKeyDown = true;
+}
+
+function keyReleased() {
+	shiftKeyDown = false;
 }
