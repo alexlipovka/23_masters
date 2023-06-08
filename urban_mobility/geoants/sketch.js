@@ -83,7 +83,8 @@ function setup() {
 	createCanvas(windowWidth, windowHeight, WEBGL);
 	ortho();
 	// center = new p5.Vector(width / 2, height / 2);
-	center = new p5.Vector(-309544, 226360);
+	center = new p5.Vector(-309544, 226360); //Красноярск
+	// center = new p5.Vector(-303248, 220430);//Новоселово
 	pCenter = center.copy();
 	gui = new dat.GUI();
 	let serverController = gui.addFolder('Servers');
@@ -279,7 +280,7 @@ function drawInfoText() {
 		m.x = G.xFromLonDeg(c.x, 2, conf.simZ);
 		m.y = G.yFromLatDeg(c.y, 2, conf.simZ);
 		text(`${curZ} ${currentScale} ${center.x} ${center.y}`, mouseX - width / 2, mouseY - height / 2 - 8);
-		text(`${round(c.x, 6)} ${round(c.y, 6)}`, mouseX - width / 2, mouseY - height / 2 + 26);
+		// text(`${round(c.x, 6)} ${round(c.y, 6)}`, mouseX - width / 2, mouseY - height / 2 + 26);
 		// text(`${m.x} ${m.y}`, mouseX - width / 2, mouseY - height / 2 + 24);
 		fill(255, 0, 0);
 		noStroke();

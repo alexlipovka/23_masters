@@ -1,5 +1,5 @@
 const WAIT = 50;
-const MAXSPEED = 25;
+const MAXSPEED = 15;
 const STATES = {
 	'HOME': 0,
 	'SEEK': 1,
