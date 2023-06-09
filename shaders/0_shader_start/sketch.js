@@ -71,7 +71,7 @@ function setup() {
 // Основная функция отрисовки
 // Выполняется 60 раз в секунду (как правило)
 function draw() {
-	background(100);
+	background(50);
 
 	push();
 	translate(-width / 2, -height / 2);
