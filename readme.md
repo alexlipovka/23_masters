@@ -47,6 +47,7 @@
 ## Проекты
 
 - [GeoAnts](./urban_mobility/geoants/) — Агентное моделирование с геопривязкой
+- [Shader Start](./shaders/0_shader_start/) — Начало работы с шейдерами GLSL
 
 ## Установка внешних библиотек
 
