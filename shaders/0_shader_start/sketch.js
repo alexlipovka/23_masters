@@ -201,14 +201,17 @@ function updateObj() {
 		lightShader.setUniform('light_pos', [lightPos.x+width/2, height - lightPos.y-height/2]);
 		lightShader.setUniform("lightColor", [lightColor.x, lightColor.y, lightColor.z]);
 		
-		litG.rect(0, 0, width, height);
+		// litG.rect(0, 0, width, height);
+		litG.plane();
 
 		//смешение с тенями
+		objG.background(0);
 		objG.shader(maskShader);
 		maskShader.setUniform("light", litG);
 		maskShader.setUniform("mask", maskG);
 		maskShader.setUniform("u_resolution", [width, height]);
-		objG.rect(0, 0, width, height);
+		// objG.rect(0, 0, width, height);
+		objG.plane();
 	
 }
 
